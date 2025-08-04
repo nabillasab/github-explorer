@@ -1,0 +1,68 @@
+# Android build files
+/build/
+/app/build/
+/*/build/
+
+# Gradle
+.gradle/
+/**/build/
+!gradle-wrapper.jar
+gradle-app.setting
+gradle.properties
+local.properties
+
+# Local configuration (do not share)
+local.properties
+*.iml
+.idea/
+*.log
+
+# Android Studio specific
+.cxx/
+.externalNativeBuild/
+*.ipr
+*.iws
+.idea/
+*.jks
+
+# Jetpack Compose Preview cache
+.compose-cache/
+
+# Keystore files
+*.keystore
+*.jks
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Testing/coverage
+coverage/
+*.ec
+*.hprof
+
+# KSP / KAPT / annotation processors
+build/generated/
+.kapt/
+.ksp/
+
+# Crash logs / debug artifacts
+*.log
+*.stacktrace
+
+# Gradle daemon
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Misc
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.war
+*.ear
+*.so
+*.zip
+*.aar
+*.map
