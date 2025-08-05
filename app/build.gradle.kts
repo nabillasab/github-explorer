@@ -69,6 +69,9 @@ dependencies {
     implementation(libs.retrofit2.gson)
     implementation(libs.okhttp.logging)
 
+    // Paging
+    implementation(libs.paging.compose)
+    implementation(libs.paging.runtime)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

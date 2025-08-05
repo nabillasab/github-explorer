@@ -56,3 +56,8 @@ data class GithubLisence(
     @SerializedName("name")
     val name: String?
 )
+
+data class GithubSearchUserData(
+    @SerializedName("items")
+    val users: List<GithubUserData>
+)

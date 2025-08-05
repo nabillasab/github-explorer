@@ -1,6 +1,12 @@
 package com.example.githubuser.data
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.example.githubuser.data.network.GithubDataSource
+import com.example.githubuser.data.network.GithubSearchUserPagingSource
+import com.example.githubuser.data.network.GithubUserPagingSource
 import com.example.githubuser.di.IoDispatcher
 import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.model.User
@@ -9,26 +15,24 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GithubUserRepositoryImpl @Inject constructor(
     private val networkDataSource: GithubDataSource,
+    private val userListPagingSource: GithubUserPagingSource,
+    private val searchUserPagingSource: GithubSearchUserPagingSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : GithubUserRepository {
 
-    override fun getUserList(): Flow<Result<List<User>>> {
-        return flow {
-            emit(Result.Loading)
-            try {
-                val response = networkDataSource.getUserList()
-                val users = response.map { userMapper(it) }
-                emit(Result.Success(users))
-            } catch (exception: Exception) {
-                emit(Result.Error(exception.message ?: "unexpected error"))
-            }
-        }.flowOn(dispatcher)
+    override fun getUserList(): Flow<PagingData<User>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20),
+            pagingSourceFactory = { userListPagingSource }).flow.map { pagingData ->
+            pagingData.map { userMapper(it) }
+        }
     }
 
     override fun getUserDetail(username: String): Flow<Result<User>> {
@@ -57,17 +61,16 @@ class GithubUserRepositoryImpl @Inject constructor(
         }.flowOn(dispatcher)
     }
 
-    override fun getUserByUsername(username: String): Flow<Result<User>> {
-        return flow {
-            emit(Result.Loading)
-            try {
-                val response = networkDataSource.getUserByUsername(username)
-                val user = userMapper(response)
-                emit(Result.Success(user))
-            } catch (exception: Exception) {
-                emit(Result.Error(exception.message ?: "unexpected error"))
-            }
-        }.flowOn(dispatcher)
+    override fun getUserByUsername(query: String): Flow<PagingData<User>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20),
+            pagingSourceFactory = {
+                searchUserPagingSource.apply {
+                    setQueryText(query)
+                }
+            }).flow.map { pagingData ->
+            pagingData.map { userMapper(it) }
+        }
     }
 
     private fun userMapper(githubUser: GithubUserData): User {

@@ -2,38 +2,46 @@ package com.example.githubuser.ui.userlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.githubuser.data.Result
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.githubuser.domain.GetUserListUseCase
-import com.example.githubuser.ui.model.UiState
+import com.example.githubuser.domain.SearchUserUseCase
 import com.example.githubuser.ui.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
 class GithubUserListViewModel @Inject constructor(
-    private val getUserListUseCase: GetUserListUseCase
-) : ViewModel() {
+    private val getUserListUseCase: GetUserListUseCase,
+    private val searchUserUseCase: SearchUserUseCase,
+) : ViewModel(), SearchUserHandler {
 
-    private val _uiState = MutableStateFlow<UiState<List<User>>>(UiState.Loading)
-    val uiState: StateFlow<UiState<List<User>>> = _uiState
+    private val _searchQuery = MutableStateFlow("")
+    override val searchQuery: StateFlow<String> = _searchQuery
 
-    init {
-        loadUserList()
+    override fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 
-    private fun loadUserList() {
-        viewModelScope.launch {
-            getUserListUseCase.execute().collect { result ->
-                val state = when (result) {
-                    is Result.Loading -> UiState.Loading
-                    is Result.Success -> UiState.Success(result.data)
-                    is Result.Error -> UiState.Error(result.message)
-                }
-                _uiState.value = state
+    //debounce for waiting until user pauses typing in ms
+    //distinctUntilChanged for avoid duplicate queries
+    //flatMapLatest for cancel old request, keep latest
+    //cachedIn for cache result across config changes
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    override val userPagingFlow: Flow<PagingData<User>> =
+        _searchQuery.debounce { 500 }.distinctUntilChanged().flatMapLatest { query ->
+            if (query.isBlank()) {
+                getUserListUseCase.execute()
+            } else {
+                searchUserUseCase.execute(query)
             }
-        }
-    }
+        }.cachedIn(viewModelScope)
 }

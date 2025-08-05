@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,9 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,16 +30,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
-import com.example.githubuser.ui.components.BodyText
+import com.example.githubuser.domain.GetUserListUseCase
+import com.example.githubuser.domain.SearchUserUseCase
 import com.example.githubuser.ui.components.ItemListDivider
-import com.example.githubuser.ui.components.LabelMediumText
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
-import com.example.githubuser.ui.components.SmallImageIcon
 import com.example.githubuser.ui.components.ToolbarTitle
 import com.example.githubuser.ui.components.UserAvatar
-import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.theme.GithubUserTheme
 
@@ -51,27 +48,12 @@ fun GithubUserListScreen(
     onUserClick: (String) -> Unit,
     viewModel: GithubUserListViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-
-    when (uiState) {
-        is UiState.Loading -> {
-            LoadingScreen()
-        }
-
-        is UiState.Success -> {
-            GithubUserList((uiState as UiState.Success<List<User>>).data, onUserClick)
-        }
-
-        is UiState.Error -> {
-            Toast.makeText(context, (uiState as UiState.Error).message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    GithubUserList(viewModel, onUserClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GithubUserList(userList: List<User>, onUserClick: (String) -> Unit) {
+private fun GithubUserList(handler: SearchUserHandler, onUserClick: (String) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -92,23 +74,21 @@ private fun GithubUserList(userList: List<User>, onUserClick: (String) -> Unit) 
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            ContentUserList(userList, onUserClick)
+            ContentUserList(handler, onUserClick)
         }
     }
 }
 
 @Composable
-private fun ContentUserList(userList: List<User>, onUserClick: (String) -> Unit) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredUser = userList.filter {
-        it.username.contains(searchQuery, ignoreCase = true)
-    }
+private fun ContentUserList(handler: SearchUserHandler, onUserClick: (String) -> Unit) {
+    val context = LocalContext.current
+    val searchQuery by handler.searchQuery.collectAsState()
+    val users = handler.userPagingFlow.collectAsLazyPagingItems()
 
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         TextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = { handler.onSearchQueryChanged(it) },
             placeholder = { Text("Search user..") },
             leadingIcon = {
                 Icon(
@@ -122,18 +102,30 @@ private fun ContentUserList(userList: List<User>, onUserClick: (String) -> Unit)
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
-            items(filteredUser) { user ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onUserClick(user.username)
-                        }
-                ) {
-                    UserItem(user)
-                    ItemListDivider()
+            items(users.itemCount) { index ->
+                users[index]?.let { user ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onUserClick(user.username)
+                            }
+                    ) {
+                        UserItem(user)
+                        ItemListDivider()
+                    }
                 }
             }
+        }
+
+        when (users.loadState.refresh) {
+            is LoadState.Loading -> {
+                LoadingScreen()
+            }
+            is LoadState.Error -> {
+                Toast.makeText(context, "error on load items", Toast.LENGTH_SHORT).show()
+            }
+            else -> { }
         }
     }
 }
@@ -150,27 +142,7 @@ private fun UserItem(user: User, modifier: Modifier = Modifier) {
 @Composable
 private fun GithubUserListPreview() {
     GithubUserTheme {
-        val userList = mutableListOf<User>()
-        val user1 = User(
-            username = "nabillasab",
-            avatarUrl = "https://avatars.githubusercontent.com/u/25047957?v=4",
-            fullName = "Nabilla Sabbaha",
-            followers = 1,
-            following = 12,
-            repoCount = 11,
-            bio = null
-        )
-        val user2 = User(
-            username = "audrians",
-            avatarUrl = "https://avatars.githubusercontent.com/u/6389222?v=4",
-            fullName = "Nabilla Sabbaha",
-            followers = 4,
-            following = 22,
-            repoCount = 12,
-            bio = null
-        )
-        userList.add(user1)
-        userList.add(user2)
-        GithubUserList(userList, onUserClick = { })
+        val fakeHandler = remember { FakeSearchUserHandler() }
+        GithubUserList(fakeHandler, onUserClick = { })
     }
 }
