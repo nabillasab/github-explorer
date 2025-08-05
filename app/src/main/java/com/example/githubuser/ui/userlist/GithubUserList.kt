@@ -34,9 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.githubuser.R
+import com.example.githubuser.ui.components.BodyText
 import com.example.githubuser.ui.components.ItemListDivider
+import com.example.githubuser.ui.components.LabelMediumText
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
+import com.example.githubuser.ui.components.SmallImageIcon
+import com.example.githubuser.ui.components.ToolbarTitle
 import com.example.githubuser.ui.components.UserAvatar
 import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
@@ -78,7 +82,7 @@ private fun GithubUserList(userList: List<User>, onUserClick: (String) -> Unit) 
                         modifier = Modifier.size(36.dp)
                     )
                 },
-                title = { Text("Github Users") },
+                title = { ToolbarTitle("Github Users") },
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
@@ -101,7 +105,7 @@ private fun ContentUserList(userList: List<User>, onUserClick: (String) -> Unit)
         it.username.contains(searchQuery, ignoreCase = true)
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         TextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },

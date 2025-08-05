@@ -18,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +40,7 @@ import com.example.githubuser.ui.components.LabelMediumText
 import com.example.githubuser.ui.components.LabelMicroText
 import com.example.githubuser.ui.components.LabelSmallText
 import com.example.githubuser.ui.components.LoadingScreen
+import com.example.githubuser.ui.components.SectionTitle
 import com.example.githubuser.ui.components.SmallDot
 import com.example.githubuser.ui.components.SmallImageDrawable
 import com.example.githubuser.ui.components.SmallImageIcon
@@ -55,7 +55,7 @@ import com.example.githubuser.ui.userdetail.model.Repository
 @Composable
 fun GithubUserDetailScreen(
     navController: NavController,
-    onRepoClick: (String) -> Unit,
+    onRepoClick: (Pair<String, String>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GithubUserDetailViewModel = hiltViewModel()
 ) {
@@ -86,7 +86,7 @@ fun GithubUserDetailScreen(
 fun GithubUserDetail(
     navController: NavController,
     userDetail: Pair<User, List<Repository>>,
-    onRepoClick: (String) -> Unit
+    onRepoClick: (Pair<String, String>) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -97,7 +97,7 @@ fun GithubUserDetail(
                         contentDescription = "back button"
                     )
                 }
-            }, title = { Text(userDetail.first.username) })
+            }, title = { SectionTitle(userDetail.first.username) })
         }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -154,14 +154,14 @@ fun CountDetail(count: Int, title: String) {
 }
 
 @Composable
-fun RepositoryList(repositoryList: List<Repository>, onRepoClick: (String) -> Unit) {
+fun RepositoryList(repositoryList: List<Repository>, onRepoClick: (Pair<String, String>) -> Unit) {
     LazyColumn {
         items(repositoryList) { repository ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        onRepoClick(repository.repoUrl)
+                        onRepoClick(Pair(repository.name, repository.repoUrl))
                     }) {
                 if (!repository.fork) {
                     ItemRepository(repository)
