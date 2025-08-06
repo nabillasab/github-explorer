@@ -31,7 +31,8 @@ fun GithubUserNavHost(
             route = "detail/{username}",
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { navBackStackEntry ->
-            GithubUserDetailScreen(navHostController, onRepoClick = { repoDetail ->
+            val username = navBackStackEntry.arguments?.getString("username") ?: ""
+            GithubUserDetailScreen(navHostController, username, onRepoClick = { repoDetail ->
                 val name = Uri.encode(repoDetail.first)
                 val encodedUrl = Uri.encode(repoDetail.second)
                 navHostController.navigate("repository/$name/$encodedUrl")

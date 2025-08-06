@@ -33,8 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
-import com.example.githubuser.domain.GetUserListUseCase
-import com.example.githubuser.domain.SearchUserUseCase
 import com.example.githubuser.ui.components.ItemListDivider
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
@@ -122,10 +120,12 @@ private fun ContentUserList(handler: SearchUserHandler, onUserClick: (String) ->
             is LoadState.Loading -> {
                 LoadingScreen()
             }
+
             is LoadState.Error -> {
                 Toast.makeText(context, "error on load items", Toast.LENGTH_SHORT).show()
             }
-            else -> { }
+
+            else -> {}
         }
     }
 }

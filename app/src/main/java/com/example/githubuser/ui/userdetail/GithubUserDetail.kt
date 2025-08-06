@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -22,6 +21,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
 import com.example.githubuser.ui.components.BodyText
 import com.example.githubuser.ui.components.FullLineDivider
@@ -51,43 +54,28 @@ import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.theme.GithubUserTheme
 import com.example.githubuser.ui.userdetail.model.Repository
+import com.example.githubuser.ui.userlist.FakeSearchUserHandler
 
 @Composable
 fun GithubUserDetailScreen(
     navController: NavController,
+    username: String,
     onRepoClick: (Pair<String, String>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GithubUserDetailViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-
-    when (uiState) {
-        is UiState.Loading -> {
-            LoadingScreen()
-        }
-
-        is UiState.Success -> {
-            GithubUserDetail(
-                navController,
-                (uiState as UiState.Success<Pair<User, List<Repository>>>).data,
-                onRepoClick
-            )
-        }
-
-        is UiState.Error -> {
-            Toast.makeText(context, (uiState as UiState.Error).message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    GithubUserDetail(navController, username, onRepoClick, viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GithubUserDetail(
-    navController: NavController,
-    userDetail: Pair<User, List<Repository>>,
-    onRepoClick: (Pair<String, String>) -> Unit
-) {
+fun GithubUserDetail(navController: NavController,
+                     username: String,
+                     onRepoClick: (Pair<String, String>) -> Unit,
+                     handler: UserDetailHandler) {
+    val repos = handler.repoPagingFlow.collectAsLazyPagingItems()
+    val uiState by handler.uiState.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(navigationIcon = {
@@ -97,20 +85,39 @@ fun GithubUserDetail(
                         contentDescription = "back button"
                     )
                 }
-            }, title = { SectionTitle(userDetail.first.username) })
+            }, title = { SectionTitle(username) })
         }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            UserInformation(userDetail.first)
+            DetailHeader(uiState)
             FullLineDivider()
             InfoTooltip(
                 text = "Only non-forked repositories are displayed",
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
-            RepositoryList(userDetail.second, onRepoClick)
+            RepositoryList(repos, onRepoClick)
+        }
+    }
+}
+
+@Composable
+fun DetailHeader(uiState: UiState<User>) {
+    val context = LocalContext.current
+    when (uiState) {
+        is UiState.Loading -> {
+            LoadingScreen()
+        }
+
+        is UiState.Success -> {
+            UserInformation((uiState as UiState.Success<User>).data)
+        }
+
+        is UiState.Error -> {
+            Toast.makeText(context, (uiState as UiState.Error).message, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 }
@@ -154,21 +161,40 @@ fun CountDetail(count: Int, title: String) {
 }
 
 @Composable
-fun RepositoryList(repositoryList: List<Repository>, onRepoClick: (Pair<String, String>) -> Unit) {
+fun RepositoryList(
+    repositoryList: LazyPagingItems<Repository>,
+    onRepoClick: (Pair<String, String>) -> Unit
+) {
+    val context = LocalContext.current
+
     LazyColumn {
-        items(repositoryList) { repository ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onRepoClick(Pair(repository.name, repository.repoUrl))
-                    }) {
-                if (!repository.fork) {
-                    ItemRepository(repository)
-                    ItemListDivider()
+        items(repositoryList.itemCount) { index ->
+            repositoryList[index]?.let { repository ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onRepoClick(Pair(repository.name, repository.repoUrl))
+                        }) {
+                    if (!repository.fork) {
+                        ItemRepository(repository)
+                        ItemListDivider()
+                    }
                 }
             }
         }
+    }
+
+    when (repositoryList.loadState.refresh) {
+        is LoadState.Loading -> {
+            LoadingScreen()
+        }
+
+        is LoadState.Error -> {
+            Toast.makeText(context, "error on load items", Toast.LENGTH_SHORT).show()
+        }
+
+        else -> { }
     }
 }
 
@@ -243,42 +269,7 @@ fun RepoDetail(
 @Composable
 fun GithubUserListPreview() {
     GithubUserTheme {
-        val user1 = User(
-            username = "nabillasab",
-            avatarUrl = "https://avatars.githubusercontent.com/u/25047957?v=4",
-            fullName = "Nabilla Sabbaha",
-            repoCount = 10,
-            followers = 1,
-            following = 12,
-            bio = "hidup tak semudah itu bray..."
-        )
-        val repos = mutableListOf<Repository>()
-        val repository3 = Repository(
-            name = "movieproject",
-            description = "Android Movie Playground!asdbajbdjabdjah ajkdbajhbda kjadkjabsdjkasbdjaksbdjasbdjkasbdjkasbd askjdbakjsbdkjasbd",
-            langRepo = null,
-            star = 6,
-            repoUrl = "https://github.com/nabillasab/movieproject",
-            fork = false,
-            updatedAt = "2025-07-28T07:46:46Z",
-            private = false,
-            forksCount = 0,
-            licenseName = "MIT License"
-        )
-        val repository4 = Repository(
-            name = "movieproject",
-            description = null,
-            langRepo = null,
-            star = 0,
-            repoUrl = "https://github.com/nabillasab/movieproject",
-            fork = false,
-            updatedAt = "2025-07-28T07:46:46Z",
-            private = false,
-            forksCount = 3,
-            licenseName = null
-        )
-        repos.add(repository3)
-        repos.add(repository4)
-        GithubUserDetail(rememberNavController(), Pair(user1, repos), onRepoClick = { })
+        val fakeHandler = remember { FakeUserDetailHandler() }
+        GithubUserDetail(rememberNavController(), "nabillasab", onRepoClick = { }, fakeHandler)
     }
 }

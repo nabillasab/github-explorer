@@ -27,6 +27,8 @@ interface GithubApi {
     @GET("/users/{username}/repos")
     suspend fun getRepositoryList(
         @Path("username") username: String,
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int = 20,
         @HeaderMap headers: Map<String, String>
     ): List<GithubRepositoryData>
 

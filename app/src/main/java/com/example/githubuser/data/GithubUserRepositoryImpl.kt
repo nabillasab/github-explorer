@@ -5,6 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.githubuser.data.network.GithubDataSource
+import com.example.githubuser.data.network.GithubRepositoryPagingSource
 import com.example.githubuser.data.network.GithubSearchUserPagingSource
 import com.example.githubuser.data.network.GithubUserPagingSource
 import com.example.githubuser.di.IoDispatcher
@@ -24,6 +25,7 @@ class GithubUserRepositoryImpl @Inject constructor(
     private val networkDataSource: GithubDataSource,
     private val userListPagingSource: GithubUserPagingSource,
     private val searchUserPagingSource: GithubSearchUserPagingSource,
+    private val repositoryPagingSource: GithubRepositoryPagingSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : GithubUserRepository {
 
@@ -48,17 +50,16 @@ class GithubUserRepositoryImpl @Inject constructor(
         }.flowOn(dispatcher)
     }
 
-    override fun getRepoList(username: String): Flow<Result<List<Repository>>> {
-        return flow {
-            emit(Result.Loading)
-            try {
-                val response = networkDataSource.getRepoList(username)
-                val repos = response.map { repoMapper(it) }
-                emit(Result.Success(repos))
-            } catch (exception: Exception) {
-                emit(Result.Error(exception.message ?: "unexpected error"))
-            }
-        }.flowOn(dispatcher)
+    override fun getRepoList(username: String): Flow<PagingData<Repository>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20),
+            pagingSourceFactory = {
+                repositoryPagingSource.apply {
+                    setUserName(username)
+                }
+            }).flow.map { pagingData ->
+            pagingData.map { repoMapper(it) }
+        }
     }
 
     override fun getUserByUsername(query: String): Flow<PagingData<User>> {

@@ -12,7 +12,7 @@ interface GithubUserRepository {
 
     fun getUserDetail(username: String): Flow<Result<User>>
 
-    fun getRepoList(username: String): Flow<Result<List<Repository>>>
+    fun getRepoList(username: String): Flow<PagingData<Repository>>
 
     fun getUserByUsername(query: String): Flow<PagingData<User>>
 }
