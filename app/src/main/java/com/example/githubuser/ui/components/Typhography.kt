@@ -107,11 +107,15 @@ fun LabelSmallText(
 }
 
 @Composable
-fun LabelMicroText(text: String, modifier: Modifier = Modifier) {
+fun LabelMicroText(
+    text: String, modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
+) {
     Text(
         text = text,
         fontSize = 10.sp,
         maxLines = 1,
+        color = color,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )

@@ -47,7 +47,7 @@ fun LoadImage(url: String, modifier: Modifier) {
 }
 
 @Composable
-fun SmallImageDrawable(drawable: Int, contentDesc: String, size: Dp = 12.dp) {
+fun ImageDrawable(drawable: Int, contentDesc: String, size: Dp = 12.dp) {
     Icon(
         painter = painterResource(drawable),
         contentDescription = contentDesc,
@@ -57,12 +57,12 @@ fun SmallImageDrawable(drawable: Int, contentDesc: String, size: Dp = 12.dp) {
 }
 
 @Composable
-fun SmallImageIcon(imageVector: ImageVector, contentDesc: String) {
+fun ImageIcon(imageVector: ImageVector, contentDesc: String, size: Dp = 12.dp) {
     Icon(
         imageVector = imageVector,
         contentDescription = contentDesc,
         modifier = Modifier
-            .size(12.dp)
+            .size(size)
     )
 }
 

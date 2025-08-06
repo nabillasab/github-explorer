@@ -4,6 +4,7 @@ import com.example.githubuser.data.GithubUserRepositoryImpl
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.network.GithubDataSource
 import com.example.githubuser.data.network.GithubDataSourceImpl
+import com.example.githubuser.data.network.NetworkExceptionInterceptor
 import com.example.githubuser.domain.GithubUserRepository
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -46,10 +47,17 @@ object NetworkModules {
     }
 
     @Provides
+    fun provideNetworkExceptionInterceptor(): NetworkExceptionInterceptor {
+        return NetworkExceptionInterceptor()
+    }
+
+    @Provides
     fun provideOkhttpClient(
-        httpLoggingInterceptor: HttpLoggingInterceptor
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+        networkExceptionInterceptor: NetworkExceptionInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(networkExceptionInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }

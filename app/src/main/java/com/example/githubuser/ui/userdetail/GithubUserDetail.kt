@@ -35,7 +35,11 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
 import com.example.githubuser.ui.components.BodyText
+import com.example.githubuser.ui.components.ErrorFooter
+import com.example.githubuser.ui.components.ErrorLoadScreen
 import com.example.githubuser.ui.components.FullLineDivider
+import com.example.githubuser.ui.components.ImageDrawable
+import com.example.githubuser.ui.components.ImageIcon
 import com.example.githubuser.ui.components.InfoTooltip
 import com.example.githubuser.ui.components.ItemListDivider
 import com.example.githubuser.ui.components.LabelLargeText
@@ -45,8 +49,6 @@ import com.example.githubuser.ui.components.LabelSmallText
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
 import com.example.githubuser.ui.components.SmallDot
-import com.example.githubuser.ui.components.SmallImageDrawable
-import com.example.githubuser.ui.components.SmallImageIcon
 import com.example.githubuser.ui.components.TextTooltip
 import com.example.githubuser.ui.components.UserAvatar
 import com.example.githubuser.ui.components.getTime
@@ -54,7 +56,6 @@ import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.theme.GithubUserTheme
 import com.example.githubuser.ui.userdetail.model.Repository
-import com.example.githubuser.ui.userlist.FakeSearchUserHandler
 
 @Composable
 fun GithubUserDetailScreen(
@@ -69,10 +70,12 @@ fun GithubUserDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GithubUserDetail(navController: NavController,
-                     username: String,
-                     onRepoClick: (Pair<String, String>) -> Unit,
-                     handler: UserDetailHandler) {
+fun GithubUserDetail(
+    navController: NavController,
+    username: String,
+    onRepoClick: (Pair<String, String>) -> Unit,
+    handler: UserDetailHandler
+) {
     val repos = handler.repoPagingFlow.collectAsLazyPagingItems()
     val uiState by handler.uiState.collectAsState()
 
@@ -116,6 +119,16 @@ fun DetailHeader(uiState: UiState<User>) {
         }
 
         is UiState.Error -> {
+            val userEmpty = User(
+                username = "",
+                avatarUrl = "",
+                fullName = "not found",
+                repoCount = 0,
+                following = 0,
+                followers = 0,
+                bio = ""
+            )
+            UserInformation(userEmpty)
             Toast.makeText(context, (uiState as UiState.Error).message, Toast.LENGTH_SHORT)
                 .show()
         }
@@ -165,8 +178,6 @@ fun RepositoryList(
     repositoryList: LazyPagingItems<Repository>,
     onRepoClick: (Pair<String, String>) -> Unit
 ) {
-    val context = LocalContext.current
-
     LazyColumn {
         items(repositoryList.itemCount) { index ->
             repositoryList[index]?.let { repository ->
@@ -183,6 +194,16 @@ fun RepositoryList(
                 }
             }
         }
+        val loadState = repositoryList.loadState
+        if (loadState.append is LoadState.Error) {
+            val error = loadState.append as LoadState.Error
+            item {
+                ErrorFooter(
+                    errorMsg = error.error.localizedMessage ?: "Failed to load more",
+                    onRetry = { repositoryList.retry() }
+                )
+            }
+        }
     }
 
     when (repositoryList.loadState.refresh) {
@@ -191,10 +212,14 @@ fun RepositoryList(
         }
 
         is LoadState.Error -> {
-            Toast.makeText(context, "error on load items", Toast.LENGTH_SHORT).show()
+            val error = repositoryList.loadState.refresh as LoadState.Error
+            ErrorLoadScreen(
+                error.error.message ?: "Failed to load data",
+                onRetry = { repositoryList.retry() }
+            )
         }
 
-        else -> { }
+        else -> {}
     }
 }
 
@@ -205,7 +230,7 @@ fun ItemRepository(repository: Repository) {
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SmallImageDrawable(R.drawable.repository, "repository", size = 16.dp)
+            ImageDrawable(R.drawable.repository, "repository", size = 16.dp)
             LabelLargeText(repository.name, modifier = Modifier.padding(start = 4.dp, end = 8.dp))
             TextTooltip(if (repository.private) "Private" else "Public")
         }
@@ -242,19 +267,19 @@ fun RepoDetail(
         }
 
         if (star > 0) {
-            SmallImageIcon(Icons.Default.Star, "icon star")
+            ImageIcon(Icons.Default.Star, "icon star")
             LabelMicroText(star.toString(), modifier = modifier.padding(start = 4.dp, end = 8.dp))
         }
 
         if (forksCount > 0) {
-            SmallImageDrawable(R.drawable.git_fork, "icon fork")
+            ImageDrawable(R.drawable.git_fork, "icon fork")
             LabelMicroText(
                 forksCount.toString(), modifier = modifier.padding(start = 4.dp, end = 8.dp)
             )
         }
 
         if (!licenseName.isNullOrEmpty()) {
-            SmallImageDrawable(R.drawable.license_icon, "icon fork")
+            ImageDrawable(R.drawable.license_icon, "icon fork")
             LabelMicroText(licenseName, modifier = modifier.padding(start = 4.dp, end = 8.dp))
         }
 
