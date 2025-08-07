@@ -8,6 +8,7 @@ import androidx.paging.cachedIn
 import com.example.githubuser.data.Result
 import com.example.githubuser.domain.GetRepoListUseCase
 import com.example.githubuser.domain.GetUserDetailUseCase
+import com.example.githubuser.ui.GithubUserDestinationArgs
 import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.userdetail.model.Repository
@@ -25,7 +26,7 @@ class GithubUserDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), UserDetailHandler {
 
-    val username: String = savedStateHandle["username"] ?: ""
+    val username: String = savedStateHandle[GithubUserDestinationArgs.USERNAME_ARG] ?: ""
 
     private val _uiState = MutableStateFlow<UiState<User>>(UiState.Loading)
     override val uiState: StateFlow<UiState<User>> = _uiState

@@ -12,7 +12,7 @@ data class GithubUserData(
     @SerializedName("login")
     val userName: String,
     @SerializedName("id")
-    val id: Int = 0,
+    val id: Int,
     @SerializedName("avatar_url")
     val avatarUrl: String?,
     @SerializedName("name")
@@ -29,17 +29,17 @@ data class GithubUserData(
 
 data class GithubRepositoryData(
     @SerializedName("id")
-    val id: Int = 0,
+    val id: Int,
     @SerializedName("name")
     val repoName: String,
     @SerializedName("private")
-    val isPrivateRepo: Boolean = false,
+    val isPrivateRepo: Boolean,
     @SerializedName("html_url")
     val repoUrl: String,
     @SerializedName("description")
     val desc: String?,
     @SerializedName("fork")
-    val isForkRepo: Boolean = false,
+    val isForkRepo: Boolean,
     @SerializedName("updated_at")
     val updatedAt: String,
     @SerializedName("stargazers_count")

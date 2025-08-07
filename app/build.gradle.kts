@@ -61,8 +61,10 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    testImplementation(libs.hilt.android.testing)
+    ksp(libs.hilt.compiler)
+
 
     // Retrofit
     implementation(libs.retrofit2)
@@ -78,6 +80,12 @@ dependencies {
     implementation(libs.room.paging)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+
+    // Unit Testing
+    testImplementation(libs.kotlinx.coroutine.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.paging.common)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

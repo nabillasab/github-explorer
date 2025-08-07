@@ -93,6 +93,7 @@ fun LabelMediumText(
 fun LabelSmallText(
     text: String,
     modifier: Modifier = Modifier,
+    maxLines: Int = 1,
     color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
@@ -101,7 +102,7 @@ fun LabelSmallText(
         fontWeight = FontWeight.Normal,
         color = color,
         modifier = modifier,
-        maxLines = 1,
+        maxLines = maxLines,
         overflow = TextOverflow.Ellipsis
     )
 }

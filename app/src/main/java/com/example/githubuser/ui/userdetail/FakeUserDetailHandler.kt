@@ -14,6 +14,7 @@ class FakeUserDetailHandler : UserDetailHandler {
     fun getFakeRepoList(): List<Repository> {
         val repos = mutableListOf<Repository>()
         val repository3 = Repository(
+            id = 1,
             name = "movieproject",
             description = "Android Movie Playground!asdbajbdjabdjah ajkdbajhbda kjadkjabsdjkasbdjaksbdjasbdjkasbdjkasbd askjdbakjsbdkjasbd",
             langRepo = null,
@@ -26,6 +27,7 @@ class FakeUserDetailHandler : UserDetailHandler {
             licenseName = "MIT License"
         )
         val repository4 = Repository(
+            id = 2,
             name = "movieproject",
             description = null,
             langRepo = null,
@@ -46,6 +48,7 @@ class FakeUserDetailHandler : UserDetailHandler {
         get() = MutableStateFlow(
             UiState.Success(
                 User(
+                    id = 1,
                     username = "nabillasab",
                     avatarUrl = "https://avatars.githubusercontent.com/u/25047957?v=4",
                     fullName = "Nabilla Sabbaha",

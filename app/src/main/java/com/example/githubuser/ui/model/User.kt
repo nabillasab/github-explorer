@@ -1,8 +1,7 @@
 package com.example.githubuser.ui.model
 
-import com.example.githubuser.ui.userdetail.model.Repository
-
 data class User(
+    val id: Int,
     val username: String,
     val avatarUrl: String?,
     val fullName: String?,
@@ -10,9 +9,4 @@ data class User(
     val followers: Int,
     val following: Int,
     val bio: String?
-)
-
-data class UserDetail(
-    val user: User,
-    val repos: List<Repository>
 )

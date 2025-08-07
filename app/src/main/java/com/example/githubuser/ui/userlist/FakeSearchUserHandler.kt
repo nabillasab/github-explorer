@@ -12,6 +12,7 @@ class FakeSearchUserHandler() : SearchUserHandler {
     fun getFakeUserList(): List<User> {
         val userList = mutableListOf<User>()
         val user1 = User(
+            id = 1,
             username = "nabillasab",
             avatarUrl = "https://avatars.githubusercontent.com/u/25047957?v=4",
             fullName = "Nabilla Sabbaha",
@@ -21,6 +22,7 @@ class FakeSearchUserHandler() : SearchUserHandler {
             bio = null
         )
         val user2 = User(
+            id = 2,
             username = "audrians",
             avatarUrl = "https://avatars.githubusercontent.com/u/6389222?v=4",
             fullName = "Nabilla Sabbaha",

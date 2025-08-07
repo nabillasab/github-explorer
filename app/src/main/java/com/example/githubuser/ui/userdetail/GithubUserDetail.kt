@@ -124,6 +124,7 @@ fun DetailHeader(uiState: UiState<User>) {
 
         is UiState.Error -> {
             val userEmpty = User(
+                id = 0,
                 username = "",
                 avatarUrl = "",
                 fullName = "not found",
@@ -162,7 +163,7 @@ fun UserInformation(user: User, modifier: Modifier = Modifier) {
     }
     if (!user.bio.isNullOrEmpty()) {
         LabelSmallText(
-            user.bio, modifier = Modifier.padding(
+            user.bio, maxLines = 3, modifier = Modifier.padding(
                 start = 16.dp, end = 16.dp, bottom = 8.dp
             )
         )

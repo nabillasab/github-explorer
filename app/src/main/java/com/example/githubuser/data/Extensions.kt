@@ -20,7 +20,8 @@ fun GithubUserData.toEntity(): UserEntity {
 }
 
 fun UserEntity.toModel(): User {
-    return return User(
+    return User(
+        id = this.id,
         username = this.userName,
         avatarUrl = this.avatarUrl,
         fullName = this.fullName,
@@ -33,6 +34,7 @@ fun UserEntity.toModel(): User {
 
 fun GithubUserData.toModel(): User {
     return User(
+        id = this.id,
         username = this.userName,
         avatarUrl = this.avatarUrl,
         fullName = this.fullName,
@@ -45,6 +47,7 @@ fun GithubUserData.toModel(): User {
 
 fun RepositoryEntity.toModel(): Repository {
     return Repository(
+        id = this.id,
         name = this.repoName,
         description = this.desc,
         langRepo = this.language,

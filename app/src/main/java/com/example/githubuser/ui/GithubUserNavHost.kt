@@ -1,53 +1,59 @@
 package com.example.githubuser.ui
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.githubuser.ui.GithubUserDestinationArgs.NAME_ARG
+import com.example.githubuser.ui.GithubUserDestinationArgs.REPO_URL_ARG
+import com.example.githubuser.ui.GithubUserDestinationArgs.USERNAME_ARG
 import com.example.githubuser.ui.repository.RepositoryWebviewScreen
 import com.example.githubuser.ui.userdetail.GithubUserDetailScreen
 import com.example.githubuser.ui.userlist.GithubUserListScreen
 
 @Composable
 fun GithubUserNavHost(
-    navHostController: NavHostController, modifier: Modifier = Modifier
+    navHostController: NavHostController,
+    startDestination: String = GithubUserDestination.USER_LIST_ROUTE,
+    navAction: GithubUserNavigationActions = remember(navHostController) {
+        GithubUserNavigationActions(navHostController)
+    },
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = "github_user_list",
+        startDestination = startDestination,
         modifier = modifier
     ) {
-        composable("github_user_list") {
+        composable(GithubUserDestination.USER_LIST_ROUTE) {
             GithubUserListScreen(onUserClick = { username ->
-                navHostController.navigate("detail/$username")
+                navAction.navigateToUserDetail(username)
             })
         }
 
         composable(
-            route = "detail/{username}",
-            arguments = listOf(navArgument("username") { type = NavType.StringType })
+            route = GithubUserDestination.USER_DETAIL_ROUTE,
+            arguments = listOf(navArgument(USERNAME_ARG) { type = NavType.StringType })
         ) { navBackStackEntry ->
-            val username = navBackStackEntry.arguments?.getString("username") ?: ""
+            val username = navBackStackEntry.arguments?.getString(USERNAME_ARG) ?: ""
             GithubUserDetailScreen(navHostController, username, onRepoClick = { repoDetail ->
-                val name = Uri.encode(repoDetail.first)
-                val encodedUrl = Uri.encode(repoDetail.second)
-                navHostController.navigate("repository/$name/$encodedUrl")
+                navAction.navigateToRepositoryDetail(repoDetail)
             })
         }
 
         composable(
-            route = "repository/{name}/{encodedUrl}",
+            route = GithubUserDestination.REPO_DETAIL_ROUTE,
             arguments = listOf(
-                navArgument("name") { type = NavType.StringType },
-                navArgument("encodedUrl") { type = NavType.StringType },
+                navArgument(NAME_ARG) { type = NavType.StringType },
+                navArgument(REPO_URL_ARG) { type = NavType.StringType },
             )
         ) { navBackStackEntry ->
-            val name = navBackStackEntry.arguments?.getString("name") ?: ""
-            val url = navBackStackEntry.arguments?.getString("encodedUrl") ?: ""
+            val name = navBackStackEntry.arguments?.getString(NAME_ARG) ?: ""
+            val url = navBackStackEntry.arguments?.getString(REPO_URL_ARG) ?: ""
             RepositoryWebviewScreen(navHostController, url, name)
         }
     }
