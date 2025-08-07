@@ -3,10 +3,13 @@ package com.example.githubuser.data.network
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.githubuser.BuildConfig
 import com.example.githubuser.data.GithubRepositoryData
 import javax.inject.Inject
 
+@Deprecated("use GithubRepoRemoteMediator instead for caching mechanism with room")
+/**
+ * Repository list pagination with Paging 3
+ */
 class GithubRepositoryPagingSource @Inject constructor(
     private val githubApi: GithubApi
 ) : PagingSource<Int, GithubRepositoryData>() {
@@ -27,16 +30,13 @@ class GithubRepositoryPagingSource @Inject constructor(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GithubRepositoryData> {
         return try {
             val page = params.key ?: 1
-            val headers = AuthHelper.getDefaultHeader()
-            headers["Proxy-Authorization"] = "Bearer ${BuildConfig.API_KEY}"
-
             val response = githubApi.getRepositoryList(
                 username = username,
                 page = page,
                 perPage = params.loadSize,
-                headers = headers
+                headers = AuthHelper.getDefaultHeader()
             )
-            Log.d("PagingSource", "Fetching users page=$page")
+            Log.d("Mediator", "Fetching users page=$page")
             val isEndOfList = response.size < params.loadSize || response.isEmpty()
             LoadResult.Page(
                 data = response,

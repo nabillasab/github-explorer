@@ -6,6 +6,10 @@ import androidx.paging.PagingState
 import com.example.githubuser.data.GithubUserData
 import javax.inject.Inject
 
+@Deprecated("use GithubUserRemoteMediator instead for caching mechanism with room")
+/**
+ * User list pagination with Paging 3
+ */
 class GithubUserPagingSource @Inject constructor(
     private val githubApi: GithubApi
 ) : PagingSource<Int, GithubUserData>() {

@@ -4,33 +4,35 @@ import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.githubuser.data.GithubUserData
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class GithubSearchUserPagingSource @Inject constructor(
-    private val githubApi: GithubApi
+class GithubSearchUserPagingSource @AssistedInject constructor(
+    private val githubApi: GithubApi,
+    @Assisted private val query: String
 ) : PagingSource<Int, GithubUserData>() {
 
-    var query = ""
-
-    fun setQueryText(query: String) {
-        this.query = query
+    @AssistedFactory
+    interface Factory {
+        fun create(query: String): GithubSearchUserPagingSource
     }
 
     override fun getRefreshKey(state: PagingState<Int, GithubUserData>): Int? = 1
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GithubUserData> {
         return try {
-            val since = params.key ?: 0
+            val page = params.key ?: 1
             val queryMap = mutableMapOf<String, String>()
             queryMap["q"] = query
 
             val response = githubApi.searchUser(
-                since = since,
+                page = page,
                 perPage = params.loadSize,
                 queryMap,
                 headers = AuthHelper.getDefaultHeader()
             )
-            Log.d("PagingSource", "Fetching users since=$since")
+            Log.d("PagingSource", "Fetching users page=$page")
             val isEndOfList = response.users.size < params.loadSize || response.users.isEmpty()
             LoadResult.Page(
                 data = response.users,

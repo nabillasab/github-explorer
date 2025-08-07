@@ -21,13 +21,14 @@ import javax.inject.Inject
 @HiltViewModel
 class GithubUserListViewModel @Inject constructor(
     private val getUserListUseCase: GetUserListUseCase,
-    private val searchUserUseCase: SearchUserUseCase,
+    private val searchUserUseCase: SearchUserUseCase
 ) : ViewModel(), SearchUserHandler {
 
     private val _searchQuery = MutableStateFlow("")
     override val searchQuery: StateFlow<String> = _searchQuery
 
-    override fun onSearchQueryChanged(query: String) {
+    override fun onSearchQueryChanged(queryStr: String) {
+        val query = queryStr.trim().lowercase()
         _searchQuery.value = query
     }
 

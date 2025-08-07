@@ -1,13 +1,15 @@
 package com.example.githubuser.data
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.example.githubuser.data.local.GithubDatabase
+import com.example.githubuser.data.mediator.GithubRepoRemoteMediator
+import com.example.githubuser.data.mediator.GithubUserRemoteMediator
 import com.example.githubuser.data.network.GithubDataSource
-import com.example.githubuser.data.network.GithubRepositoryPagingSource
 import com.example.githubuser.data.network.GithubSearchUserPagingSource
-import com.example.githubuser.data.network.GithubUserPagingSource
 import com.example.githubuser.di.IoDispatcher
 import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.model.User
@@ -23,42 +25,63 @@ import javax.inject.Singleton
 @Singleton
 class GithubUserRepositoryImpl @Inject constructor(
     private val networkDataSource: GithubDataSource,
-    private val userListPagingSource: GithubUserPagingSource,
-    private val searchUserPagingSource: GithubSearchUserPagingSource,
-    private val repositoryPagingSource: GithubRepositoryPagingSource,
+    private val userRemoteMediator: GithubUserRemoteMediator,
+    private val searchUserFactory: GithubSearchUserPagingSource.Factory,
+    private val repoUserFactory: GithubRepoRemoteMediator.Factory,
+    private val db: GithubDatabase,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : GithubUserRepository {
 
+    @OptIn(ExperimentalPagingApi::class)
     override fun getUserList(): Flow<PagingData<User>> {
         return Pager(
             config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { userListPagingSource }).flow.map { pagingData ->
-            pagingData.map { userMapper(it) }
+            remoteMediator = userRemoteMediator,
+            pagingSourceFactory = { db.userDao().getUserPagingSource() }).flow.map { pagingData ->
+            pagingData.map { it.toModel() }
         }
     }
 
     override fun getUserDetail(username: String): Flow<Result<User>> {
         return flow {
             emit(Result.Loading)
+            val userDataCompleted = db.userDao().getUserDataCompleted(username)
             try {
-                val response = networkDataSource.getUserDetail(username)
-                val user = userMapper(response)
-                emit(Result.Success(user))
+                val userFreshExist = db.userDao().getFreshUserByUsername(username)
+
+                if (userFreshExist != null || isUserDataStale(userDataCompleted?.lastUpdated ?: 0L)) {
+                    val response = networkDataSource.getUserDetail(username)
+                    val user = response.toModel()
+                    db.userDao().insert(response.toEntity())
+                    emit(Result.Success(user))
+                } else {
+                    if (userDataCompleted != null) {
+                        emit(Result.Success(userDataCompleted.toModel()))
+                    }
+                }
+
             } catch (exception: Exception) {
                 emit(Result.Error(exception.message ?: "unexpected error"))
+                if (userDataCompleted != null) {
+                    emit(Result.Success(userDataCompleted.toModel()))
+                }
             }
         }.flowOn(dispatcher)
     }
 
+    private fun isUserDataStale(lastUpdated: Long): Boolean {
+        return (System.currentTimeMillis() - lastUpdated > 20 * 60 * 1000)
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
     override fun getRepoList(username: String): Flow<PagingData<Repository>> {
         return Pager(
             config = PagingConfig(pageSize = 20),
+            remoteMediator = repoUserFactory.create(username),
             pagingSourceFactory = {
-                repositoryPagingSource.apply {
-                    setUserName(username)
-                }
+                db.repositoryDao().getRepoByUserName(username)
             }).flow.map { pagingData ->
-            pagingData.map { repoMapper(it) }
+            pagingData.map { it.toModel() }
         }
     }
 
@@ -66,38 +89,9 @@ class GithubUserRepositoryImpl @Inject constructor(
         return Pager(
             config = PagingConfig(pageSize = 20),
             pagingSourceFactory = {
-                searchUserPagingSource.apply {
-                    setQueryText(query)
-                }
+                searchUserFactory.create(query)
             }).flow.map { pagingData ->
-            pagingData.map { userMapper(it) }
+            pagingData.map { it.toModel() }
         }
-    }
-
-    private fun userMapper(githubUser: GithubUserData): User {
-        return User(
-            username = githubUser.userName,
-            avatarUrl = githubUser.avatarUrl,
-            fullName = githubUser.fullName,
-            repoCount = githubUser.totalRepo,
-            followers = githubUser.followers,
-            following = githubUser.following,
-            bio = githubUser.bio
-        )
-    }
-
-    private fun repoMapper(githubRepo: GithubRepositoryData): Repository {
-        return Repository(
-            name = githubRepo.repoName,
-            description = githubRepo.desc,
-            langRepo = githubRepo.language,
-            star = githubRepo.starCount,
-            repoUrl = githubRepo.repoUrl,
-            fork = githubRepo.isForkRepo,
-            updatedAt = githubRepo.updatedAt,
-            private = githubRepo.isPrivateRepo,
-            forksCount = githubRepo.forksCount,
-            licenseName = githubRepo.license?.name
-        )
     }
 }

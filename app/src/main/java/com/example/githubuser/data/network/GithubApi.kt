@@ -34,9 +34,9 @@ interface GithubApi {
 
     @GET("/search/users")
     suspend fun searchUser(
-        @Query("since") since: Int,
+        @Query("page") page: Int,
         @Query("per_page") perPage: Int = 20,
-        @QueryMap queryParams: Map<String, String>,
+        @QueryMap query: Map<String, String>,
         @HeaderMap headers: Map<String, String>
     ): GithubSearchUserData
 

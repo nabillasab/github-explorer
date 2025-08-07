@@ -19,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -78,6 +79,9 @@ fun GithubUserDetail(
 ) {
     val repos = handler.repoPagingFlow.collectAsLazyPagingItems()
     val uiState by handler.uiState.collectAsState()
+
+    //force paging 3 to refresh to fix issue it doesn't trigger refresh
+    LaunchedEffect(Unit) { repos.refresh() }
 
     Scaffold(
         topBar = {

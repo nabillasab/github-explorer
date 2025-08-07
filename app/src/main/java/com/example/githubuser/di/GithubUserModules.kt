@@ -1,6 +1,11 @@
 package com.example.githubuser.di
 
+import android.content.Context
+import androidx.room.Room
 import com.example.githubuser.data.GithubUserRepositoryImpl
+import com.example.githubuser.data.local.GithubDatabase
+import com.example.githubuser.data.local.RepositoryDao
+import com.example.githubuser.data.local.UserDao
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.network.GithubDataSource
 import com.example.githubuser.data.network.GithubDataSourceImpl
@@ -12,6 +17,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -76,4 +82,28 @@ object NetworkModules {
     fun provideGithubApi(retrofit: Retrofit): GithubApi {
         return retrofit.create(GithubApi::class.java)
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModules {
+
+    @Singleton
+    @Provides
+    fun provideDatabase(@ApplicationContext context: Context): GithubDatabase {
+        return Room.databaseBuilder(
+            context.applicationContext, GithubDatabase::class.java, "github_database"
+        ).build()
+    }
+
+    @Provides
+    fun provideUserDao(database: GithubDatabase): UserDao {
+        return database.userDao()
+    }
+
+    @Provides
+    fun provideRepositoryDao(database: GithubDatabase): RepositoryDao {
+        return database.repositoryDao()
+    }
+
 }
