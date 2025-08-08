@@ -62,7 +62,6 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    testImplementation(libs.hilt.android.testing)
     ksp(libs.hilt.compiler)
 
 
@@ -81,12 +80,6 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
-    // Unit Testing
-    testImplementation(libs.kotlinx.coroutine.test)
-    testImplementation(libs.mockk)
-    testImplementation(libs.turbine)
-    testImplementation(libs.paging.common)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -95,11 +88,30 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Unit Testing
+    testImplementation(libs.kotlinx.coroutine.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.paging.common)
     testImplementation(libs.junit)
+    testImplementation(libs.hilt.android.testing)
+
+    //androidtest
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.runner)
+    androidTestImplementation(libs.rules)
+    androidTestImplementation(libs.paging.testing)
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.androidx.core.testing)
+    androidTestImplementation(libs.kotlinx.coroutine.test)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.paging.common)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

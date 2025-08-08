@@ -13,7 +13,7 @@ data class UserEntity(
     val followers: Int,
     val following: Int,
     val bio: String?,
-    val lastUpdated: Long = System.currentTimeMillis()
+    var lastUpdated: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "github_repo")

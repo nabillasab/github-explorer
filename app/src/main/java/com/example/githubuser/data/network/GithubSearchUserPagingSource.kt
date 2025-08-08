@@ -8,7 +8,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class GithubSearchUserPagingSource @AssistedInject constructor(
+open class GithubSearchUserPagingSource @AssistedInject constructor(
     private val githubApi: GithubApi,
     @Assisted private val query: String
 ) : PagingSource<Int, GithubUserData>() {

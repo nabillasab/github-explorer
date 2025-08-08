@@ -5,7 +5,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.example.githubuser.data.local.GithubDatabase
+import com.example.githubuser.data.local.RepositoryDao
+import com.example.githubuser.data.local.UserDao
 import com.example.githubuser.data.mediator.GithubRepoRemoteMediator
 import com.example.githubuser.data.mediator.GithubUserRemoteMediator
 import com.example.githubuser.data.network.GithubDataSource
@@ -25,10 +26,11 @@ import javax.inject.Singleton
 @Singleton
 class GithubUserRepositoryImpl @Inject constructor(
     private val networkDataSource: GithubDataSource,
-    private val userRemoteMediator: GithubUserRemoteMediator,
+    private val userRemoteMediator: GithubUserRemoteMediator?,
     private val searchUserFactory: GithubSearchUserPagingSource.Factory,
     private val repoUserFactory: GithubRepoRemoteMediator.Factory,
-    private val db: GithubDatabase,
+    private val userDao: UserDao,
+    private val repositoryDao: RepositoryDao,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : GithubUserRepository {
 
@@ -37,7 +39,7 @@ class GithubUserRepositoryImpl @Inject constructor(
         return Pager(
             config = PagingConfig(pageSize = 20),
             remoteMediator = userRemoteMediator,
-            pagingSourceFactory = { db.userDao().getUserPagingSource() }).flow.map { pagingData ->
+            pagingSourceFactory = { userDao.getUserPagingSource() }).flow.map { pagingData ->
             pagingData.map { it.toModel() }
         }
     }
@@ -45,14 +47,14 @@ class GithubUserRepositoryImpl @Inject constructor(
     override fun getUserDetail(username: String): Flow<Result<User>> {
         return flow {
             emit(Result.Loading)
-            val userDataCompleted = db.userDao().getUserDataCompleted(username)
+            val userDataCompleted = userDao.getUserDataCompleted(username)
             try {
-                val userFreshExist = db.userDao().getFreshUserByUsername(username)
+                val userFreshExist = userDao.getFreshUserByUsername(username)
 
                 if (userFreshExist != null || isUserDataStale(userDataCompleted?.lastUpdated ?: 0L)) {
                     val response = networkDataSource.getUserDetail(username)
                     val user = response.toModel()
-                    db.userDao().insert(response.toEntity())
+                    userDao.insert(response.toEntity())
                     emit(Result.Success(user))
                 } else {
                     if (userDataCompleted != null) {
@@ -79,7 +81,7 @@ class GithubUserRepositoryImpl @Inject constructor(
             config = PagingConfig(pageSize = 20),
             remoteMediator = repoUserFactory.create(username),
             pagingSourceFactory = {
-                db.repositoryDao().getRepoByUserName(username)
+                repositoryDao.getRepoByUserName(username)
             }).flow.map { pagingData ->
             pagingData.map { it.toModel() }
         }

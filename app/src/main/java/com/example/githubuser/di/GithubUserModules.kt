@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.example.githubuser.data.GithubUserRepositoryImpl
 import com.example.githubuser.data.local.GithubDatabase
+import com.example.githubuser.data.local.RemoteKeyRepoDao
+import com.example.githubuser.data.local.RemoteKeyUserDao
 import com.example.githubuser.data.local.RepositoryDao
 import com.example.githubuser.data.local.UserDao
 import com.example.githubuser.data.network.GithubApi
@@ -104,6 +106,16 @@ object DatabaseModules {
     @Provides
     fun provideRepositoryDao(database: GithubDatabase): RepositoryDao {
         return database.repositoryDao()
+    }
+
+    @Provides
+    fun provideRemoteKeyUserDao(database: GithubDatabase): RemoteKeyUserDao {
+        return database.remoteKeyUserDao()
+    }
+
+    @Provides
+    fun provideRemoteKeyRepoDao(database: GithubDatabase): RemoteKeyRepoDao {
+        return database.remoteKeyRepoDao()
     }
 
 }
