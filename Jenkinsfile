@@ -38,6 +38,26 @@ pipeline {
       }
     }
 
+    stage('Gradle props for AndroidX') {
+    steps {
+      sh '''
+        set -e
+        # create gradle.properties if missing
+        [ -f gradle.properties ] || touch gradle.properties
+  
+        # ensure android.useAndroidX=true
+        grep -q "^android.useAndroidX=" gradle.properties \
+          && sed -i 's/^android.useAndroidX=.*/android.useAndroidX=true/' gradle.properties \
+          || echo "android.useAndroidX=true" >> gradle.properties
+  
+        # enable Jetifier only if you still have old support libs
+        if ! grep -q "^android.enableJetifier=" gradle.properties; then
+          echo "android.enableJetifier=true" >> gradle.properties
+        fi
+      '''
+      }
+    }
+
     stage('Build') {
       steps {
         sh './gradlew clean assembleDebug'
