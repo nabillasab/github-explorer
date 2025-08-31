@@ -6,7 +6,6 @@
 # Gradle
 .gradle/
 /**/build/
-!gradle-wrapper.jar
 gradle-app.setting
 gradle.properties
 local.properties
@@ -52,7 +51,6 @@ build/generated/
 
 # Gradle daemon
 .gradle/
-!gradle/wrapper/gradle-wrapper.jar
 
 # Misc
 *.apk
