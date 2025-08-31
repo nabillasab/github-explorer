@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    ANDROID_SDK_ROOT = '/opt/android-sdk'
+    ANDROID_SDK_ROOT = '/var/jenkins_home/android-sdk'
     PATH = "${env.ANDROID_SDK_ROOT}/platform-tools:${env.ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${env.PATH}"
   }
 
