@@ -1,5 +1,11 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      // Android SDK + build-tools preinstalled.
+      image 'thyrlian/android-sdk:latest'
+      args '-u root:root' // let the container write in workspace
+    }
+  }
   options { ansiColor('xterm'); timeout(time: 45, unit: 'MINUTES') }
 
   stages {
