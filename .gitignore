@@ -6,7 +6,6 @@
 # Gradle
 /**/build/
 gradle-app.setting
-gradle.properties
 local.properties
 
 # Local configuration (do not share)
