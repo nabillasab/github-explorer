@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       // Android SDK + build-tools preinstalled.
-      image 'thyrlian/android-sdk:latest'
+      image 'ghcr.io/cirruslabs/android-sdk:35'
       args '-u root:root' // let the container write in workspace
     }
   }
