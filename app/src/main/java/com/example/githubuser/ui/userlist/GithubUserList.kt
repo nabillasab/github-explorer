@@ -1,6 +1,7 @@
 package com.example.githubuser.ui.userlist
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,15 +44,16 @@ import com.example.githubuser.ui.theme.GithubUserTheme
 
 @Composable
 fun GithubUserListScreen(
-    onUserClick: (String) -> Unit,
-    viewModel: GithubUserListViewModel = hiltViewModel()
+    onUserClick: (String) -> Unit, viewModel: GithubUserListViewModel = hiltViewModel()
 ) {
     GithubUserList(viewModel, onUserClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GithubUserList(handler: SearchUserHandler, onUserClick: (String) -> Unit) {
+private fun GithubUserList(
+    handler: SearchUserHandler, onUserClick: (String) -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -65,8 +67,7 @@ private fun GithubUserList(handler: SearchUserHandler, onUserClick: (String) -> 
                 title = { ToolbarTitle("Github Users") },
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-        }
-    ) { paddingValues ->
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,7 +79,9 @@ private fun GithubUserList(handler: SearchUserHandler, onUserClick: (String) -> 
 }
 
 @Composable
-private fun ContentUserList(handler: SearchUserHandler, onUserClick: (String) -> Unit) {
+private fun ContentUserList(
+    handler: SearchUserHandler, onUserClick: (String) -> Unit
+) {
     val searchQuery by handler.searchQuery.collectAsState()
     val users = handler.userPagingFlow.collectAsLazyPagingItems()
 
@@ -89,8 +92,7 @@ private fun ContentUserList(handler: SearchUserHandler, onUserClick: (String) ->
             placeholder = { Text("Search user..") },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Icon"
+                    imageVector = Icons.Default.Search, contentDescription = "Search Icon"
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -98,54 +100,60 @@ private fun ContentUserList(handler: SearchUserHandler, onUserClick: (String) ->
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn {
-            items(users.itemCount) { index ->
-                users[index]?.let { user ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onUserClick(user.username)
-                            }
-                    ) {
-                        UserItem(user)
-                        ItemListDivider()
-                    }
-                }
-            }
-
-            val loadState = users.loadState
-            if (loadState.append is LoadState.Error) {
-                val error = loadState.append as LoadState.Error
-                item {
-                    ErrorFooter(
-                        errorMsg = error.error.localizedMessage ?: "Failed to load more",
-                        onRetry = { users.retry() }
-                    )
-                }
-            }
-        }
-
-        when (users.loadState.refresh) {
-            is LoadState.Loading -> {
+        val loadState = users.loadState
+        when {
+            loadState.refresh is LoadState.Loading -> {
                 LoadingScreen()
             }
 
-            is LoadState.Error -> {
+            loadState.refresh is LoadState.Error -> {
                 val error = users.loadState.refresh as LoadState.Error
                 ErrorLoadScreen(
-                    error.error.message ?: "Failed to load data",
-                    onRetry = { users.retry() }
-                )
+                    error.error.message ?: "Failed to load data", onRetry = { users.retry() })
             }
 
-            else -> {}
+            users.itemCount == 0 -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                ) {
+                    Text("No users found")
+                }
+            }
+
+            else -> {
+                LazyColumn {
+                    items(users.itemCount) { index ->
+                        users[index]?.let { user ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onUserClick(user.username)
+                                    }) {
+                                UserItem(user)
+                                ItemListDivider()
+                            }
+                        }
+                    }
+
+                    item {
+                        if (users.loadState.append is LoadState.Loading) {
+                            LoadingScreen()
+                        } else if (users.loadState.append is LoadState.Error) {
+                            val error = loadState.append as LoadState.Error
+                            ErrorFooter(
+                                errorMsg = error.error.localizedMessage ?: "Failed to load more",
+                                onRetry = { users.retry() })
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun UserItem(user: User, modifier: Modifier = Modifier) {
+fun UserItem(user: User, modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         UserAvatar(user.avatarUrl ?: "", 64.dp, modifier = modifier.padding(16.dp))
         SectionTitle(user.username)

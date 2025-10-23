@@ -3,7 +3,7 @@ package com.example.githubuser.data.fake
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
-import com.example.githubuser.data.local.RepositoryEntity
+import com.example.githubuser.data.local.repo.RepositoryEntity
 import com.example.githubuser.data.mediator.GithubRepoRemoteMediator
 import io.mockk.mockk
 

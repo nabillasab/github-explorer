@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,27 +48,31 @@ fun LoadImage(url: String, modifier: Modifier) {
 }
 
 @Composable
-fun ImageDrawable(drawable: Int, contentDesc: String, size: Dp = 12.dp) {
+fun ImageDrawable(drawable: Int, contentDesc: String, size: Dp = 14.dp,
+                  color: Color = MaterialTheme.colorScheme.onBackground) {
     Icon(
         painter = painterResource(drawable),
         contentDescription = contentDesc,
+        tint = color,
         modifier = Modifier
             .size(size)
     )
 }
 
 @Composable
-fun ImageIcon(imageVector: ImageVector, contentDesc: String, size: Dp = 12.dp) {
+fun ImageIcon(imageVector: ImageVector, contentDesc: String, size: Dp = 14.dp,
+              color: Color = MaterialTheme.colorScheme.onBackground) {
     Icon(
         imageVector = imageVector,
         contentDescription = contentDesc,
+        tint = color,
         modifier = Modifier
             .size(size)
     )
 }
 
 @Composable
-fun SmallDot(color: Color = Color.Black, size: Dp = 8.dp, modifier: Modifier = Modifier) {
+fun SmallDot(color: Color = Color(0xFF8B949E), size: Dp = 10.dp, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(size)

@@ -5,42 +5,43 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import com.example.githubuser.data.local.RemoteKeyRepoDao
-import com.example.githubuser.data.local.RemoteKeyRepoEntity
-import com.example.githubuser.data.local.RepositoryDao
-import com.example.githubuser.data.local.RepositoryEntity
+import com.example.githubuser.data.local.repo.RemoteKeyRepoDao
+import com.example.githubuser.data.local.repo.RemoteKeyRepoEntity
+import com.example.githubuser.data.local.repo.RepositoryDao
+import com.example.githubuser.data.local.repo.RepositoryEntity
 import com.example.githubuser.data.network.AuthHelper
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.toEntity
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 
 /**
  * Repository list pagination with Paging 3 and caching mechanism with Room
  */
 @OptIn(ExperimentalPagingApi::class)
-open class GithubRepoRemoteMediator @AssistedInject constructor(
+open class GithubRepoRemoteMediator @Inject constructor(
     private val transactionRunner: RoomTransactionRunner,
     private val repositoryDao: RepositoryDao,
     private val remoteKeyRepoDao: RemoteKeyRepoDao,
-    private val api: GithubApi,
-    @Assisted private val username: String
+    private val api: GithubApi
 ) : RemoteMediator<Int, RepositoryEntity>() {
 
-    @AssistedFactory
-    interface Factory {
-        fun create(username: String): GithubRepoRemoteMediator
+    private lateinit var username: String
+
+    fun setUsername(username: String) {
+        this.username = username
     }
 
     override suspend fun initialize(): InitializeAction {
         val lastUpdated = repositoryDao.getLastUpdated() ?: 0L
         val currentTime = System.currentTimeMillis()
         val diff = currentTime - lastUpdated
-        return if (diff > 20 * 6 * 1000) { // 20 mins
-            InitializeAction.LAUNCH_INITIAL_REFRESH
-        } else {
+        val cacheTime = 20 * 6 * 1000
+        return if (diff <= cacheTime) { // 20 mins
+            Log.d("Repo Mediator", "skip initial refresh")
             InitializeAction.SKIP_INITIAL_REFRESH
+        } else {
+            Log.d("Repo Mediator", "launch initial refresh")
+            InitializeAction.LAUNCH_INITIAL_REFRESH
         }
     }
 
@@ -48,17 +49,24 @@ open class GithubRepoRemoteMediator @AssistedInject constructor(
         loadType: LoadType,
         state: PagingState<Int, RepositoryEntity>
     ): MediatorResult {
-        Log.d("Mediator", "Fetching users loadType=${loadType}")
+        Log.d("Repo Mediator", "Fetching users loadType=${loadType}")
         val page: Int = when (loadType) {
             //First load, pager recreated, or invalidate()
-            LoadType.REFRESH -> 1
+            LoadType.REFRESH -> {
+                Log.d("Repo Mediator", "REFRESH - Starting from 0")
+                0
+            }
             //Load next page (scrolling down)
             LoadType.APPEND -> {
-                val remoteKey = remoteKeyRepoDao.getLastRemoteKey(username)
+                val remoteKey = remoteKeyRepoDao.getRemoteKey(username)
+                Log.d("Repo Mediator", "APPEND - remote keys $remoteKey")
                 remoteKey?.nextPage ?: return MediatorResult.Success(true)
             }
             //Load previous page (scrolling up) — not always needed
-            LoadType.PREPEND -> return MediatorResult.Success(true)
+            LoadType.PREPEND -> {
+                Log.d("Repo Mediator", "PREPEND - no next key ending pagination")
+                return MediatorResult.Success(true)
+            }
         }
         return try {
             val response = api.getRepositoryList(
@@ -67,12 +75,12 @@ open class GithubRepoRemoteMediator @AssistedInject constructor(
                 perPage = state.config.pageSize,
                 headers = AuthHelper.getDefaultHeader()
             )
-            Log.d("Mediator", "Fetching users page=$page")
-            Log.d("Mediator", "Loaded ${response.size} repositories")
+            Log.d("Repo Mediator", "Fetching users page=$page")
+            Log.d("Repo Mediator", "Loaded ${response.size} repositories")
 
             val repoWithTimestamp = response.map { it.toEntity(username) }
             val endOfPagination = response.isEmpty()
-            val cacheLastKey = remoteKeyRepoDao.getLastRemoteKey(username)
+            val cacheLastKey = remoteKeyRepoDao.getRemoteKey(username)
 
             var diff: Long = Integer.MAX_VALUE.toLong()
             if (cacheLastKey != null) {
@@ -87,20 +95,19 @@ open class GithubRepoRemoteMediator @AssistedInject constructor(
                     repositoryDao.clearDataByUsername(username)
                 }
                 repositoryDao.insertAll(repoWithTimestamp)
+                Log.d("Repo Mediator", "Inserted repos data")
 
                 if (!endOfPagination) {
-                    val keys = response.map { repo ->
-                        RemoteKeyRepoEntity(
-                            id = repo.id,
-                            username,
-                            nextPage = page + 1,
-                            lastFetched = System.currentTimeMillis()
-                        )
-                    }
-                    remoteKeyRepoDao.insertAll(keys)
+                    val key = RemoteKeyRepoEntity(
+                        username = username,
+                        nextPage = page + 1,
+                        lastFetched = System.currentTimeMillis()
+                    )
+                    Log.d("Repo Mediator", "Storing remote key $key")
+                    remoteKeyRepoDao.insertOrReplace(key)
                 }
             }
-
+            Log.d("Repo Mediator", "Load complete pagination $endOfPagination")
             MediatorResult.Success(endOfPaginationReached = endOfPagination)
         } catch (e: Exception) {
             MediatorResult.Error(e)

@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import com.example.githubuser.data.GithubUserRepositoryImpl
 import com.example.githubuser.data.local.GithubDatabase
-import com.example.githubuser.data.local.RemoteKeyRepoDao
-import com.example.githubuser.data.local.RemoteKeyUserDao
-import com.example.githubuser.data.local.RepositoryDao
-import com.example.githubuser.data.local.UserDao
+import com.example.githubuser.data.local.repo.RemoteKeyRepoDao
+import com.example.githubuser.data.local.user.RemoteKeyUserDao
+import com.example.githubuser.data.local.repo.RepositoryDao
+import com.example.githubuser.data.local.user.RemoteKeySearchDao
+import com.example.githubuser.data.local.user.UserDao
+import com.example.githubuser.data.local.user.UserSourceDao
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.network.GithubDataSource
 import com.example.githubuser.data.network.GithubDataSourceImpl
@@ -104,6 +106,11 @@ object DatabaseModules {
     }
 
     @Provides
+    fun provideUserSourceDao(database: GithubDatabase): UserSourceDao {
+        return database.userSourceDao()
+    }
+
+    @Provides
     fun provideRepositoryDao(database: GithubDatabase): RepositoryDao {
         return database.repositoryDao()
     }
@@ -111,6 +118,11 @@ object DatabaseModules {
     @Provides
     fun provideRemoteKeyUserDao(database: GithubDatabase): RemoteKeyUserDao {
         return database.remoteKeyUserDao()
+    }
+
+    @Provides
+    fun provideRemoteKeySearchDao(database: GithubDatabase): RemoteKeySearchDao {
+        return database.remoteKeySearchDao()
     }
 
     @Provides

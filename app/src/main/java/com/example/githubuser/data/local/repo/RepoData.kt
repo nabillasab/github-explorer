@@ -1,20 +1,7 @@
-package com.example.githubuser.data.local
+package com.example.githubuser.data.local.repo
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-@Entity(tableName = "github_user")
-data class UserEntity(
-    @PrimaryKey val userName: String,
-    val id: Int,
-    val avatarUrl: String?,
-    val fullName: String?,
-    val totalRepo: Int,
-    val followers: Int,
-    val following: Int,
-    val bio: String?,
-    var lastUpdated: Long = System.currentTimeMillis()
-)
 
 @Entity(tableName = "github_repo")
 data class RepositoryEntity(
@@ -34,16 +21,8 @@ data class RepositoryEntity(
 )
 
 @Entity
-data class RemoteKeyUserEntity(
-    @PrimaryKey val id: Int,
-    val nextSince: Int,
-    val lastFetched: Long
-)
-
-@Entity
 data class RemoteKeyRepoEntity(
-    @PrimaryKey val id: Int,
-    val username: String,
-    val nextPage: Int,
+    @PrimaryKey val username: String,
+    val nextPage: Int?,
     val lastFetched: Long
 )

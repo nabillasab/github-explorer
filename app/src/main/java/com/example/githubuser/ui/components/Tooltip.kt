@@ -47,7 +47,6 @@ fun InfoTooltip(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun TextTooltip(text: String, modifier: Modifier = Modifier) {
     val backgroundColor = Color(0xFF49454F)
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier

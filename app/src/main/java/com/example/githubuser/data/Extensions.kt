@@ -1,7 +1,7 @@
 package com.example.githubuser.data
 
-import com.example.githubuser.data.local.RepositoryEntity
-import com.example.githubuser.data.local.UserEntity
+import com.example.githubuser.data.local.repo.RepositoryEntity
+import com.example.githubuser.data.local.user.UserEntity
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.userdetail.model.Repository
 

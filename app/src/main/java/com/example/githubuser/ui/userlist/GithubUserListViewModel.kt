@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.example.githubuser.domain.GetUserListUseCase
-import com.example.githubuser.domain.SearchUserUseCase
+import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,8 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GithubUserListViewModel @Inject constructor(
-    private val getUserListUseCase: GetUserListUseCase,
-    private val searchUserUseCase: SearchUserUseCase
+    private val repository: GithubUserRepository,
 ) : ViewModel(), SearchUserHandler {
 
     private val _searchQuery = MutableStateFlow("")
@@ -40,9 +38,9 @@ class GithubUserListViewModel @Inject constructor(
     override val userPagingFlow: Flow<PagingData<User>> =
         _searchQuery.debounce { 500 }.distinctUntilChanged().flatMapLatest { query ->
             if (query.isBlank()) {
-                getUserListUseCase.execute()
+                repository.getUserList()
             } else {
-                searchUserUseCase.execute(query)
+                repository.getUserByUsername(query)
             }
         }.cachedIn(viewModelScope)
 }

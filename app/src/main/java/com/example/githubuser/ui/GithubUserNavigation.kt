@@ -35,7 +35,6 @@ class GithubUserNavigationActions(private val navController: NavHostController) 
     fun navigateToUserDetail(username: String) {
         navController.navigate("$USER_DETAIL_SCREEN/$username")
     }
-
     fun navigateToRepositoryDetail(repoDetail: Pair<String, String>) {
         val name = Uri.encode(repoDetail.first)
         val encodedUrl = Uri.encode(repoDetail.second)

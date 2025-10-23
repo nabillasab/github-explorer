@@ -3,7 +3,6 @@ package com.example.githubuser.data.fake
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingState
 import com.example.githubuser.data.GithubUserData
-import com.example.githubuser.data.network.GithubSearchUserPagingSource
 import io.mockk.mockk
 
 @OptIn(ExperimentalPagingApi::class)

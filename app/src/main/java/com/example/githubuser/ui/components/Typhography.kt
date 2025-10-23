@@ -28,6 +28,7 @@ fun ToolbarTitle(
 @Composable
 fun SectionTitle(
     text: String,
+    fontWeight: FontWeight = FontWeight.Normal,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground
 ) {
@@ -36,6 +37,7 @@ fun SectionTitle(
         style = MaterialTheme.typography.titleMedium,
         color = color,
         modifier = modifier,
+        fontWeight = fontWeight,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
@@ -51,6 +53,23 @@ fun BodyText(
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = color,
+        modifier = modifier,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+fun BodyLargeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        color = color,
+        fontWeight = FontWeight.Bold,
         modifier = modifier,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
@@ -77,12 +96,14 @@ fun LabelLargeText(
 fun LabelMediumText(
     text: String,
     modifier: Modifier = Modifier,
+    fontWeight: FontWeight = FontWeight.Normal,
     color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
         color = color,
+        fontWeight = fontWeight,
         modifier = modifier,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
@@ -110,7 +131,7 @@ fun LabelSmallText(
 @Composable
 fun LabelMicroText(
     text: String, modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onBackground
+    color: Color = Color(0xFF8B949E)
 ) {
     Text(
         text = text,

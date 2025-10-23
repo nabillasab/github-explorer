@@ -1,5 +1,6 @@
 package com.example.githubuser.data
 
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 sealed class Result<out T> {
@@ -59,5 +60,19 @@ data class GithubLisence(
 
 data class GithubSearchUserData(
     @SerializedName("items")
-    val users: List<GithubUserData>
+    val users: List<GithubUserData>,
+    @SerializedName("total_count")
+    val totalCount: Int,
+    @SerializedName("incomplete_results")
+    val incompleteResults: Boolean
+)
+
+data class RemoteKeyUser(
+    @PrimaryKey val id: Int,
+    val prevKey: Int?,
+    val nextKey: Int?,
+    val queryType: String,
+    val query: String? = null,
+    val nextSince: Int,
+    val lastFetched: Long
 )

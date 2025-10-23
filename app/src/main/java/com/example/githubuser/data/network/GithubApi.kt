@@ -18,6 +18,14 @@ interface GithubApi {
         @HeaderMap headers: Map<String, String>
     ): List<GithubUserData>
 
+    @GET("/search/users")
+    suspend fun searchUser(
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int = 20,
+        @Query("q") query: String,
+        @HeaderMap headers: Map<String, String>
+    ): GithubSearchUserData
+
     @GET("/users/{username}")
     suspend fun getUserDetail(
         @Path("username") username: String,
@@ -32,12 +40,6 @@ interface GithubApi {
         @HeaderMap headers: Map<String, String>
     ): List<GithubRepositoryData>
 
-    @GET("/search/users")
-    suspend fun searchUser(
-        @Query("page") page: Int,
-        @Query("per_page") perPage: Int = 20,
-        @QueryMap query: Map<String, String>,
-        @HeaderMap headers: Map<String, String>
-    ): GithubSearchUserData
+
 
 }

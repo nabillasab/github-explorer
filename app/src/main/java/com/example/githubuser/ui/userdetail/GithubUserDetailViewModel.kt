@@ -6,8 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.githubuser.data.Result
-import com.example.githubuser.domain.GetRepoListUseCase
-import com.example.githubuser.domain.GetUserDetailUseCase
+import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.GithubUserDestinationArgs
 import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
@@ -21,8 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GithubUserDetailViewModel @Inject constructor(
-    private val getUserDetailUseCase: GetUserDetailUseCase,
-    private val getRepoListUseCase: GetRepoListUseCase,
+    private val repository: GithubUserRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), UserDetailHandler {
 
@@ -31,7 +29,7 @@ class GithubUserDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState<User>>(UiState.Loading)
     override val uiState: StateFlow<UiState<User>> = _uiState
 
-    override val repoPagingFlow: Flow<PagingData<Repository>> = getRepoListUseCase.execute(username)
+    override val repoPagingFlow: Flow<PagingData<Repository>> = repository.getRepoList(username)
         .cachedIn(viewModelScope)
 
     init {
@@ -40,7 +38,7 @@ class GithubUserDetailViewModel @Inject constructor(
 
     fun loadUserDetail() {
         viewModelScope.launch {
-            getUserDetailUseCase.execute(username).collect { result ->
+            repository.getUserDetail(username).collect { result ->
                 val state = when (result) {
                     is Result.Loading -> UiState.Loading
                     is Result.Success -> UiState.Success(result.data)

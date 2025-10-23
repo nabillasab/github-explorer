@@ -5,14 +5,13 @@ import androidx.paging.ExperimentalPagingApi
 import app.cash.turbine.test
 import com.example.githubuser.data.fake.FakeRepoRemoteMediator
 import com.example.githubuser.data.fake.FakeSearchUserPagingSource
-import com.example.githubuser.data.local.RemoteKeyUserDao
-import com.example.githubuser.data.local.RepositoryDao
-import com.example.githubuser.data.local.UserDao
+import com.example.githubuser.data.local.user.RemoteKeyUserDao
+import com.example.githubuser.data.local.repo.RepositoryDao
+import com.example.githubuser.data.local.user.UserDao
 import com.example.githubuser.data.mediator.GithubRepoRemoteMediator
 import com.example.githubuser.data.mediator.GithubUserRemoteMediator
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.network.GithubDataSource
-import com.example.githubuser.data.network.GithubSearchUserPagingSource
 import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.helper.FakeModel
 import com.example.githubuser.helper.FakeModel.toData
