@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.example.githubuser.ui.theme.MetadataColor
 
 @Composable
 fun ToolbarTitle(
@@ -54,7 +55,24 @@ fun BodyText(
         style = MaterialTheme.typography.bodySmall,
         color = color,
         modifier = modifier,
-        maxLines = 2,
+        maxLines = 5,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+fun BodyMediumText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = color,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier,
+        maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
 }
@@ -68,23 +86,6 @@ fun BodyLargeText(
     Text(
         text = text,
         style = MaterialTheme.typography.bodyLarge,
-        color = color,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
-}
-
-@Composable
-fun LabelLargeText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onBackground
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
         color = color,
         modifier = modifier,
         maxLines = 1,
@@ -131,7 +132,7 @@ fun LabelSmallText(
 @Composable
 fun LabelMicroText(
     text: String, modifier: Modifier = Modifier,
-    color: Color = Color(0xFF8B949E)
+    color: Color = MetadataColor
 ) {
     Text(
         text = text,

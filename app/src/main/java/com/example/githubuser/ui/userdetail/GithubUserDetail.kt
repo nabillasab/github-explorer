@@ -1,24 +1,31 @@
 package com.example.githubuser.ui.userdetail
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -39,14 +47,12 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
 import com.example.githubuser.ui.components.BodyLargeText
+import com.example.githubuser.ui.components.BodyMediumText
 import com.example.githubuser.ui.components.BodyText
 import com.example.githubuser.ui.components.ErrorFooter
 import com.example.githubuser.ui.components.ErrorLoadScreen
-import com.example.githubuser.ui.components.FullLineDivider
 import com.example.githubuser.ui.components.ImageDrawable
 import com.example.githubuser.ui.components.ImageIcon
-import com.example.githubuser.ui.components.ItemListDivider
-import com.example.githubuser.ui.components.LabelLargeText
 import com.example.githubuser.ui.components.LabelMediumText
 import com.example.githubuser.ui.components.LabelMicroText
 import com.example.githubuser.ui.components.LabelSmallText
@@ -60,6 +66,11 @@ import com.example.githubuser.ui.components.getTime
 import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.theme.GithubUserTheme
+import com.example.githubuser.ui.theme.MetadataColor
+import com.example.githubuser.ui.theme.PrimaryColor
+import com.example.githubuser.ui.theme.RepoDescriptionColor
+import com.example.githubuser.ui.theme.RepoTitleColor
+import com.example.githubuser.ui.theme.White
 import com.example.githubuser.ui.userdetail.model.Repository
 
 @Composable
@@ -89,14 +100,29 @@ fun GithubUserDetail(
 
     Scaffold(
         topBar = {
-            TopAppBar(navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "back button"
+            TopAppBar(
+                colors = TopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = PrimaryColor,
+                    navigationIconContentColor = PrimaryColor,
+                    titleContentColor = PrimaryColor,
+                    actionIconContentColor = PrimaryColor
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back button"
+                        )
+                    }
+                },
+                title = {
+                    SectionTitle(
+                        username,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryColor
                     )
-                }
-            }, title = { SectionTitle(username, fontWeight = FontWeight.Bold) })
+                })
         }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -104,7 +130,13 @@ fun GithubUserDetail(
                 .padding(paddingValues)
         ) {
             DetailHeader(uiState)
-            FullLineDivider()
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(White)
+                    .shadow(1.dp)
+            )
             RepositoryList(repos, onRepoClick)
         }
     }
@@ -141,39 +173,47 @@ fun DetailHeader(uiState: UiState<User>) {
 
 @Composable
 fun UserInformation(user: User, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
     ) {
-        UserAvatar(
-            user.avatarUrl ?: "", 64.dp, modifier = modifier.padding(
-                start = 16.dp, end = 16.dp, bottom = 8.dp
+        Row {
+            UserAvatar(
+                user.avatarUrl ?: "", 64.dp, modifier = modifier.padding(
+                    start = 16.dp, end = 16.dp, bottom = 8.dp
+                )
             )
-        )
-        Column {
-            LabelLargeText(user.fullName ?: "", modifier = modifier)
-            Row(modifier = Modifier.padding(vertical = 8.dp)) {
-                CountDetail(user.repoCount, "repositories")
-                Spacer(modifier = Modifier.padding(12.dp))
-                CountDetail(user.followers, "followers")
-                Spacer(modifier = Modifier.padding(12.dp))
-                CountDetail(user.following, "following")
+            Column {
+                BodyLargeText(
+                    user.fullName ?: "",
+                    modifier = modifier.padding(bottom = 8.dp),
+                    color = PrimaryColor
+                )
+                Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                    CountDetail(user.repoCount, "repositories")
+                    Spacer(modifier = Modifier.padding(12.dp))
+                    CountDetail(user.followers, "followers")
+                    Spacer(modifier = Modifier.padding(12.dp))
+                    CountDetail(user.following, "following")
+                }
             }
         }
-    }
-    if (!user.bio.isNullOrEmpty()) {
-        LabelSmallText(
-            user.bio, maxLines = 3, modifier = Modifier.padding(
-                horizontal = 16.dp, vertical = 8.dp
+        if (!user.bio.isNullOrEmpty()) {
+            LabelSmallText(
+                user.bio, maxLines = 3, modifier = Modifier.padding(
+                    horizontal = 16.dp, vertical = 8.dp
+                ), color = PrimaryColor
             )
-        )
+        }
     }
 }
 
 @Composable
 fun CountDetail(count: Int, title: String) {
     Column {
-        LabelMediumText(count.toString(), fontWeight = FontWeight.Bold, color = Color(0xFF1F2328))
-        LabelSmallText(title, color = Color(0xFF656D76))
+        LabelMediumText(count.toString(), fontWeight = FontWeight.Bold, color = PrimaryColor)
+        LabelSmallText(title, color = PrimaryColor)
     }
 }
 
@@ -181,7 +221,7 @@ fun CountDetail(count: Int, title: String) {
 fun RepositoryList(
     repositoryList: LazyPagingItems<Repository>, onRepoClick: (Pair<String, String>) -> Unit
 ) {
-    LazyColumn {
+    LazyColumn(modifier = Modifier.padding(vertical = 8.dp)) {
         items(repositoryList.itemCount) { index ->
             repositoryList[index]?.let { repository ->
                 Column(
@@ -192,7 +232,6 @@ fun RepositoryList(
                         }) {
                     if (!repository.fork) {
                         ItemRepository(repository)
-                        ItemListDivider()
                     }
                 }
             }
@@ -225,96 +264,108 @@ fun RepositoryList(
 
 @Composable
 fun ItemRepository(repository: Repository) {
-    Column(modifier = Modifier.padding(vertical = 2.dp)) {
-        Row(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Card(
+        colors = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(0.5.dp, Color(0xFFE5E5E5)),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    )
+    {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
-            BodyLargeText(
-                text = repository.name,
-                color = Color(0xFF0969DA),
-                modifier = Modifier.padding(end = 8.dp)
-            )
+            Row(
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BodyMediumText(
+                    text = repository.name,
+                    color = RepoTitleColor,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
 
-            if (repository.private) {
-                TextTooltip("Private")
+                if (repository.private) {
+                    TextTooltip("Private")
+                }
             }
-        }
-        if (!repository.description.isNullOrEmpty()) {
-            BodyText(
-                repository.description,
-                color = Color(0xFF656D76),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            if (!repository.description.isNullOrEmpty()) {
+                BodyText(
+                    repository.description,
+                    color = RepoDescriptionColor,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+            LabelMicroText(
+                "Updated ${getTime(repository.updatedAt)}",
+                color = Color(0xFF8B949E),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+            RepoDetail(
+                repository.langRepo,
+                repository.star,
+                repository.forksCount,
+                repository.licenseName,
             )
         }
-        Spacer(modifier = Modifier.size(4.dp))
-        RepoDetail(
-            repository.langRepo,
-            repository.updatedAt,
-            repository.star,
-            repository.forksCount,
-            repository.licenseName,
-        )
     }
 }
 
 @Composable
 fun RepoDetail(
     langRepo: String?,
-    updatedAt: String,
     star: Int,
     forksCount: Int,
     licenseName: String?,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (!langRepo.isNullOrEmpty()) {
-                val color = LanguageColors.getColors(langRepo)
-                SmallDot(color = color)
-                LabelMicroText(langRepo,
-                    color = color,
-                    modifier = modifier.padding(start = 4.dp, end = 8.dp))
-            }
-
-            if (star > 0) {
-                ImageIcon(
-                    Icons.Default.Star,
-                    "icon star"
-                )
-                LabelMicroText(
-                    star.toString(),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = modifier.padding(start = 4.dp, end = 8.dp)
-                )
-            }
-
-            if (forksCount > 0) {
-                ImageDrawable(
-                    R.drawable.git_fork,
-                    "icon fork",
-                    color = Color(0xFF8B949E)
-                )
-                LabelMicroText(
-                    forksCount.toString(), modifier = modifier.padding(start = 4.dp, end = 8.dp)
-                )
-            }
-
-            if (!licenseName.isNullOrEmpty()) {
-                ImageDrawable(
-                    R.drawable.license_icon, "icon fork",
-                    color = Color(0xFF8B949E)
-                )
-                LabelMicroText(licenseName, modifier = modifier.padding(start = 4.dp, end = 8.dp))
-            }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        if (!langRepo.isNullOrEmpty()) {
+            val color = LanguageColors.getColors(langRepo)
+            SmallDot(color = color)
+            LabelMicroText(
+                langRepo,
+                color = color,
+                modifier = modifier.padding(start = 4.dp, end = 12.dp)
+            )
         }
-        LabelMicroText(
-            "Updated ${getTime(updatedAt)}",
-            color = Color(0xFF8B949E),
-            modifier = modifier.padding(end = 16.dp)
-        )
+
+        if (star > 0) {
+            ImageIcon(
+                Icons.Default.Star,
+                "icon star",
+                color = MetadataColor
+            )
+            LabelMicroText(
+                star.toString(),
+                modifier = modifier.padding(start = 4.dp, end = 12.dp)
+            )
+        }
+
+        if (forksCount > 0) {
+            ImageDrawable(
+                R.drawable.git_fork,
+                "icon fork",
+                color = MetadataColor
+            )
+            LabelMicroText(
+                forksCount.toString(), modifier = modifier.padding(start = 4.dp, end = 12.dp)
+            )
+        }
+
+        if (!licenseName.isNullOrEmpty()) {
+            ImageDrawable(
+                R.drawable.license_icon, "icon fork",
+                color = MetadataColor
+            )
+            LabelMicroText(licenseName, modifier = modifier.padding(start = 4.dp, end = 12.dp))
+        }
     }
 }
 

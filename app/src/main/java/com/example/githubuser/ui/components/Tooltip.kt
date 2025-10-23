@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.githubuser.ui.theme.DarkBlue
 import com.example.githubuser.ui.theme.GithubUserTheme
+import com.example.githubuser.ui.theme.White
 
 @Composable
 fun InfoTooltip(text: String, modifier: Modifier = Modifier) {
@@ -46,12 +48,13 @@ fun InfoTooltip(text: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun TextTooltip(text: String, modifier: Modifier = Modifier) {
-    val backgroundColor = Color(0xFF49454F)
+    val backgroundColor = DarkBlue
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .border(width = 1.dp, backgroundColor, shape = RoundedCornerShape(4.dp))
-            .padding(horizontal = 4.dp, vertical = 2.dp)
+            .border(width = 1.dp, color = backgroundColor, shape = RoundedCornerShape(4.dp))
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+
     ) {
         LabelSmallText(
             text = text,
