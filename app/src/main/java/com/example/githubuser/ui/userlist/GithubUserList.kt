@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,8 +18,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -72,12 +74,15 @@ private fun GithubUserList(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
             ContentUserList(handler, onUserClick)
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ContentUserList(
     handler: SearchUserHandler, onUserClick: (String) -> Unit
@@ -85,18 +90,26 @@ private fun ContentUserList(
     val searchQuery by handler.searchQuery.collectAsState()
     val users = handler.userPagingFlow.collectAsLazyPagingItems()
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        TextField(
-            value = searchQuery,
-            onValueChange = { handler.onSearchQueryChanged(it) },
-            placeholder = { Text("Search user..") },
+    Column {
+        SearchBar(
+            modifier = Modifier.fillMaxWidth(),
+            query = searchQuery,
+            onQueryChange = { handler.onSearchQueryChanged(it) },
+            onSearch = { },
+            active = false,
+            onActiveChange = { },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search, contentDescription = "Search Icon"
                 )
             },
-            modifier = Modifier.fillMaxWidth()
-        )
+            placeholder = {
+                Text("Search here…")
+            }
+        ) {
+
+        }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -160,7 +173,7 @@ fun UserItem(user: User, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun GithubUserListPreview() {
     GithubUserTheme {
