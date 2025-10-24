@@ -5,12 +5,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun FullLineDivider() {
     HorizontalDivider(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
     )
 }
 
@@ -18,6 +19,6 @@ fun FullLineDivider() {
 fun ItemListDivider() {
     HorizontalDivider(
         modifier = Modifier.padding(horizontal = 8.dp),
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+        color = Color(0xFFEDEDED)
     )
 }

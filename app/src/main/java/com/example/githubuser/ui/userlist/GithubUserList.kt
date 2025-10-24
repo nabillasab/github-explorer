@@ -35,7 +35,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
 import com.example.githubuser.ui.components.ErrorFooter
 import com.example.githubuser.ui.components.ErrorLoadScreen
-import com.example.githubuser.ui.components.ItemListDivider
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
 import com.example.githubuser.ui.components.ToolbarTitle

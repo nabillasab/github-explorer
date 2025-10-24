@@ -1,7 +1,6 @@
 package com.example.githubuser.ui.userdetail
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -9,20 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
@@ -33,8 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,8 +44,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.githubuser.R
+import com.example.githubuser.ui.components.Badge
 import com.example.githubuser.ui.components.BodyLargeText
-import com.example.githubuser.ui.components.BodyMediumText
 import com.example.githubuser.ui.components.BodyText
 import com.example.githubuser.ui.components.ErrorFooter
 import com.example.githubuser.ui.components.ErrorLoadScreen
@@ -60,16 +58,21 @@ import com.example.githubuser.ui.components.LanguageColors
 import com.example.githubuser.ui.components.LoadingScreen
 import com.example.githubuser.ui.components.SectionTitle
 import com.example.githubuser.ui.components.SmallDot
-import com.example.githubuser.ui.components.TextTooltip
+import com.example.githubuser.ui.components.TitleLargeText
 import com.example.githubuser.ui.components.UserAvatar
 import com.example.githubuser.ui.components.getTime
+import com.example.githubuser.ui.components.hasLatestUpdateInAMonth
+import com.example.githubuser.ui.components.toFormattedString
 import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
+import com.example.githubuser.ui.theme.ClassicYellow
 import com.example.githubuser.ui.theme.GithubUserTheme
+import com.example.githubuser.ui.theme.GreenLight
+import com.example.githubuser.ui.theme.GreenMint
 import com.example.githubuser.ui.theme.MetadataColor
 import com.example.githubuser.ui.theme.PrimaryColor
 import com.example.githubuser.ui.theme.RepoDescriptionColor
-import com.example.githubuser.ui.theme.RepoTitleColor
+import com.example.githubuser.ui.theme.StarColor
 import com.example.githubuser.ui.theme.White
 import com.example.githubuser.ui.userdetail.model.Repository
 
@@ -102,7 +105,7 @@ fun GithubUserDetail(
         topBar = {
             TopAppBar(
                 colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = White,
                     scrolledContainerColor = PrimaryColor,
                     navigationIconContentColor = PrimaryColor,
                     titleContentColor = PrimaryColor,
@@ -130,13 +133,6 @@ fun GithubUserDetail(
                 .padding(paddingValues)
         ) {
             DetailHeader(uiState)
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .background(White)
-                    .shadow(1.dp)
-            )
             RepositoryList(repos, onRepoClick)
         }
     }
@@ -176,7 +172,9 @@ fun UserInformation(user: User, modifier: Modifier = Modifier) {
     Column(
         Modifier
             .fillMaxWidth()
+            .background(White)
             .padding(vertical = 8.dp)
+
     ) {
         Row {
             UserAvatar(
@@ -187,7 +185,7 @@ fun UserInformation(user: User, modifier: Modifier = Modifier) {
             Column {
                 BodyLargeText(
                     user.fullName ?: "",
-                    modifier = modifier.padding(bottom = 8.dp),
+                    modifier = modifier.padding(bottom = 4.dp),
                     color = PrimaryColor
                 )
                 Row(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -265,51 +263,66 @@ fun RepositoryList(
 @Composable
 fun ItemRepository(repository: Repository) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(0.5.dp, Color(0xFFE5E5E5)),
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-    )
-    {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp, // Smooth shadow
+            pressedElevation = 2.dp,
+            focusedElevation = 6.dp
+        ),
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(containerColor = White),
+    ) {
+        Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ImageDrawable(
+                drawable = R.drawable.repository,
+                contentDesc = "icon star",
+                size = 20.dp,
+                color = MetadataColor,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                BodyMediumText(
-                    text = repository.name,
-                    color = RepoTitleColor,
-                    modifier = Modifier.padding(end = 8.dp)
+                Row(
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TitleLargeText(
+                        text = repository.name,
+                        color = PrimaryColor,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .weight(1f, fill = false)
+                    )
+
+                    if (hasLatestUpdateInAMonth(repository.updatedAt)) {
+                        Badge("Recent", GreenMint, GreenLight)
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    if (repository.star > 1000) {
+                        Badge("Popular", Color(0xFFFFEBEE), Color(0xFFD32F2F))
+                    }
+                }
+
+                RepoDetail(
+                    repository.langRepo,
+                    repository.star,
+                    repository.forksCount,
+                    repository.updatedAt,
                 )
 
-                if (repository.private) {
-                    TextTooltip("Private")
+                if (!repository.description.isNullOrEmpty()) {
+                    BodyText(
+                        repository.description,
+                        color = RepoDescriptionColor,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                    )
                 }
+                Spacer(modifier = Modifier.size(4.dp))
             }
-            if (!repository.description.isNullOrEmpty()) {
-                BodyText(
-                    repository.description,
-                    color = RepoDescriptionColor,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-            LabelMicroText(
-                "Updated ${getTime(repository.updatedAt)}",
-                color = Color(0xFF8B949E),
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-            RepoDetail(
-                repository.langRepo,
-                repository.star,
-                repository.forksCount,
-                repository.licenseName,
-            )
         }
     }
 }
@@ -317,14 +330,14 @@ fun ItemRepository(repository: Repository) {
 @Composable
 fun RepoDetail(
     langRepo: String?,
-    star: Int,
+    starCount: Int,
     forksCount: Int,
-    licenseName: String?,
+    updatedAt: String,
     modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        modifier = modifier.padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         if (!langRepo.isNullOrEmpty()) {
             val color = LanguageColors.getColors(langRepo)
@@ -336,15 +349,16 @@ fun RepoDetail(
             )
         }
 
-        if (star > 0) {
+        if (starCount > 0) {
             ImageIcon(
                 Icons.Default.Star,
                 "icon star",
-                color = MetadataColor
+                color = ClassicYellow
             )
             LabelMicroText(
-                star.toString(),
-                modifier = modifier.padding(start = 4.dp, end = 12.dp)
+                text = starCount.toFormattedString(),
+                color = StarColor,
+                modifier = Modifier.padding(start = 4.dp, end = 12.dp)
             )
         }
 
@@ -359,13 +373,16 @@ fun RepoDetail(
             )
         }
 
-        if (!licenseName.isNullOrEmpty()) {
-            ImageDrawable(
-                R.drawable.license_icon, "icon fork",
-                color = MetadataColor
-            )
-            LabelMicroText(licenseName, modifier = modifier.padding(start = 4.dp, end = 12.dp))
-        }
+        ImageIcon(
+            Icons.Filled.DateRange,
+            "icon fork",
+            color = MetadataColor
+        )
+        LabelMicroText(
+            getTime(updatedAt),
+            color = Color(0xFF8B949E),
+            modifier = Modifier.padding(start = 4.dp, end = 16.dp)
+        )
     }
 }
 

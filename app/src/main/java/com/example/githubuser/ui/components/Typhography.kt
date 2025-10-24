@@ -52,7 +52,7 @@ fun BodyText(
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.bodySmall,
+        style = MaterialTheme.typography.bodyMedium,
         color = color,
         modifier = modifier,
         maxLines = 5,
@@ -61,7 +61,24 @@ fun BodyText(
 }
 
 @Composable
-fun BodyMediumText(
+fun TitleLargeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        color = color,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+fun TitleMediumText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground
@@ -85,7 +102,7 @@ fun BodyLargeText(
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.headlineSmall,
         color = color,
         modifier = modifier,
         maxLines = 1,
@@ -136,7 +153,7 @@ fun LabelMicroText(
 ) {
     Text(
         text = text,
-        fontSize = 10.sp,
+        style = MaterialTheme.typography.labelSmall,
         maxLines = 1,
         color = color,
         overflow = TextOverflow.Ellipsis,

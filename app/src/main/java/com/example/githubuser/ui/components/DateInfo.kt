@@ -28,11 +28,22 @@ fun getTime(timestamp: String): String {
             duration.toDays() < 30 -> "${duration.toDays() / 7} weeks ago"
             duration.toDays() > 30 && duration.toDays() < 365 -> "${duration.toDays() / 30} months ago"
             else -> {
-                "on ${parseDateLatestApi(timestamp)}"
+                parseDateLatestApi(timestamp)
             }
         }
     } else {
-        return "on ${parseDateOldApi(timestamp)}"
+        return "parseDateOldApi(timestamp)"
+    }
+}
+
+fun hasLatestUpdateInAMonth(timestamp: String): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val now = ZonedDateTime.now(ZoneId.systemDefault())
+        val parsedTime = Instant.parse(timestamp).atZone(ZoneId.systemDefault())
+        val duration = Duration.between(parsedTime, now)
+        return duration.toDays() < 30
+    } else {
+        return false
     }
 }
 
