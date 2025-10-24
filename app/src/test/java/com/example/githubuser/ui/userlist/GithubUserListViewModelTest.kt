@@ -3,14 +3,12 @@ package com.example.githubuser.ui.userlist
 import androidx.paging.AsyncPagingDataDiffer
 import androidx.paging.PagingData
 import app.cash.turbine.test
-import com.example.githubuser.domain.GetUserListUseCase
-import com.example.githubuser.domain.SearchUserUseCase
+import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.helper.FakeModel
 import com.example.githubuser.helper.MainDispatcherRule
 import com.example.githubuser.helper.NoopListCallback
 import com.example.githubuser.helper.UserDiffCallback
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,20 +30,20 @@ class GithubUserListViewModelTest {
     val dispatcherRule = MainDispatcherRule()
 
     private lateinit var viewModel: GithubUserListViewModel
-    private val getUserListUseCase: GetUserListUseCase = mockk()
-    private val searchUserUseCase: SearchUserUseCase = mockk()
+
+    private val repository: GithubUserRepository = mockk()
 
     @Before
     fun setUp() {
-        viewModel = GithubUserListViewModel(getUserListUseCase, searchUserUseCase)
+        viewModel = GithubUserListViewModel(repository)
     }
 
     @Test
     fun `onSearchQueryChanged sets new value`() = runTest {
-        //Given
+        // Given
         val expectedValue = "nabillasab"
 
-        //When & Then
+        // When & Then
         viewModel.searchQuery.test {
             viewModel.onSearchQueryChanged(expectedValue)
 
@@ -57,16 +55,17 @@ class GithubUserListViewModelTest {
     }
 
     @Test
-    fun `userPagingFlow emits from getUserListUseCase when search query is empty`() = runTest {
-        //Given
+    fun `userPagingFlow emits from repository getUserList when search query is empty`() = runTest {
+        // Given
         val username = ""
 
-        val userPagingData = PagingData.from(FakeModel.getFakeUserList())
+        // expected to get main user list
+        val userPagingData = PagingData.from(FakeModel.getFakeMainUserList())
 
-        coEvery { getUserListUseCase.execute() } returns flowOf(userPagingData)
-        coEvery { searchUserUseCase.execute(username) } returns flowOf(PagingData.empty())
+        coEvery { repository.getUserList() } returns flowOf(userPagingData)
+        coEvery { repository.getUserByUsername(username) } returns flowOf(PagingData.empty())
 
-        //When
+        // When
         viewModel.onSearchQueryChanged(username)
         val differ = AsyncPagingDataDiffer(
             diffCallback = UserDiffCallback(),
@@ -82,55 +81,44 @@ class GithubUserListViewModelTest {
 
         advanceUntilIdle()
 
-        //Then
-        //validating this function was called at least once during the test execution
-        coVerify { getUserListUseCase.execute() }
-        //validating the searchUserUseCase.execute() function was never called
-        coVerify(exactly = 0) { searchUserUseCase.execute(username) }
-
         val snapshot = differ.snapshot()
         assertEquals(2, snapshot.size)
-        assertEquals("nabillasab", snapshot[0]?.username)
-        assertEquals("audrians", snapshot[1]?.username)
+        assertEquals("mojombo", snapshot[0]?.username)
+        assertEquals("defunkt", snapshot[1]?.username)
 
         job.cancel()
     }
 
     @Test
-    fun `userPagingFlow emits from searchUserUseCase when search query is not empty`() = runTest {
-        //Given
-        val username = "nabillasab"
-        val userPagingData = PagingData.from(FakeModel.getFakeUserList())
+    fun `userPagingFlow emits from repository search by username when search query is not empty`() =
+        runTest {
+            // Given
+            val username = "nabillasab"
+            val userPagingData = PagingData.from(FakeModel.getSearchUserList())
 
-        coEvery { getUserListUseCase.execute() } returns flowOf(PagingData.empty())
-        coEvery { searchUserUseCase.execute(username) } returns flowOf(userPagingData)
+            coEvery { repository.getUserList() } returns flowOf(PagingData.empty())
+            coEvery { repository.getUserByUsername(username) } returns flowOf(userPagingData)
 
-        //When
-        viewModel.onSearchQueryChanged(username)
-        val differ = AsyncPagingDataDiffer(
-            diffCallback = UserDiffCallback(),
-            updateCallback = NoopListCallback(),
-            workerDispatcher = Dispatchers.Main
-        )
+            // When
+            viewModel.onSearchQueryChanged(username)
+            val differ = AsyncPagingDataDiffer(
+                diffCallback = UserDiffCallback(),
+                updateCallback = NoopListCallback(),
+                workerDispatcher = Dispatchers.Main
+            )
 
-        val job = launch(UnconfinedTestDispatcher()) {
-            viewModel.userPagingFlow.collectLatest {
-                differ.submitData(it)
+            val job = launch(UnconfinedTestDispatcher()) {
+                viewModel.userPagingFlow.collectLatest {
+                    differ.submitData(it)
+                }
             }
+
+            advanceUntilIdle()
+
+            val snapshot = differ.snapshot()
+            assertEquals(2, snapshot.size)
+            assertEquals("nabillasab", snapshot[0]?.username)
+            assertEquals("audrians", snapshot[1]?.username)
+            job.cancel()
         }
-
-        advanceUntilIdle()
-
-        //Then
-        //validating this function was called at least once during the test execution
-        coVerify { searchUserUseCase.execute(username) }
-        //validating the getUserListUseCase.execute() function was never called
-        coVerify(exactly = 0) { getUserListUseCase.execute() }
-
-        val snapshot = differ.snapshot()
-        assertEquals(2, snapshot.size)
-        assertEquals("nabillasab", snapshot[0]?.username)
-        assertEquals("audrians", snapshot[1]?.username)
-        job.cancel()
-    }
 }

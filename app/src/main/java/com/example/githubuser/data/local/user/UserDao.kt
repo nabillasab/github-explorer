@@ -29,25 +29,8 @@ interface UserDao {
     @Upsert
     suspend fun insertAll(users: List<UserEntity>)
 
-//    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
-//    suspend fun insertUser(user: UserEntity)
-
-//    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-//    fun getUserById(id: Int): UserEntity?
-
     @Query("DELETE FROM github_user")
     suspend fun clearAll()
-
-    // REVIEW THIS BELOW CODE LATER =============
-
-//    @Query("SELECT * FROM github_user ORDER BY id ASC")
-//    fun getUserPagingSource(): PagingSource<Int, UserEntity>
-
-//    @Query("SELECT * FROM github_user WHERE userName LIKE '%' || :query || '%' ORDER BY id ASC")
-//    fun searchUsers(query: String): PagingSource<Int, UserEntity>
-
-    @Query("SELECT * FROM github_user ORDER BY id DESC LIMIT 1")
-    fun getLastUser(): UserEntity?
 
     @Query("SELECT * FROM github_user WHERE userName == :username AND fullName IS NULL")
     suspend fun getFreshUserByUsername(username: String): UserEntity?

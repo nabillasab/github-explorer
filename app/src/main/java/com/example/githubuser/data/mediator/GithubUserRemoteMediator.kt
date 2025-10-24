@@ -5,11 +5,10 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import com.example.githubuser.data.local.user.RemoteKeyUserDao
+import androidx.room.withTransaction
+import com.example.githubuser.data.local.GithubDatabase
 import com.example.githubuser.data.local.user.RemoteKeyUserEntity
-import com.example.githubuser.data.local.user.UserDao
 import com.example.githubuser.data.local.user.UserEntity
-import com.example.githubuser.data.local.user.UserSourceDao
 import com.example.githubuser.data.local.user.UserSourceEntity
 import com.example.githubuser.data.network.AuthHelper
 import com.example.githubuser.data.network.GithubApi
@@ -21,16 +20,13 @@ import javax.inject.Inject
  */
 @OptIn(ExperimentalPagingApi::class)
 open class GithubUserRemoteMediator @Inject constructor(
-    private val transactionRunner: RoomTransactionRunner,
-    private val userDao: UserDao,
-    private val userSourceDao: UserSourceDao,
-    private val remoteKeyUserDao: RemoteKeyUserDao,
-    private val api: GithubApi,
+    private val db: GithubDatabase,
+    private val api: GithubApi
 ) : RemoteMediator<Int, UserEntity>() {
 
-    //timeout caching
+    // timeout caching
     override suspend fun initialize(): InitializeAction {
-        val lastUpdated = userDao.getLastUpdated() ?: 0L
+        val lastUpdated = db.userDao().getLastUpdated() ?: 0L
         val currentTime = System.currentTimeMillis()
         val diff = currentTime - lastUpdated
         val cacheTime = 20 * 6 * 1000
@@ -54,13 +50,13 @@ open class GithubUserRemoteMediator @Inject constructor(
                 0
             }
 
-            //Load next page (scrolling down)
+            // Load next page (scrolling down)
             LoadType.APPEND -> {
-                val remoteKey = remoteKeyUserDao.getRemoteKey()
+                val remoteKey = db.remoteKeyUserDao().getRemoteKey()
                 Log.d("User Mediator", "APPEND - remote keys $remoteKey")
                 remoteKey?.nextKey ?: return MediatorResult.Success(true)
             }
-            //Load previous page (scrolling up) — not always needed
+            // Load previous page (scrolling up) — not always needed
             LoadType.PREPEND -> {
                 Log.d("User Mediator", "PREPEND - no next key ending pagination")
                 return MediatorResult.Success(true)
@@ -76,23 +72,23 @@ open class GithubUserRemoteMediator @Inject constructor(
             )
             val result = response.map { it.toEntity() }
 
-            transactionRunner.runInTransaction {
+            db.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     Log.d("User Mediator", "Clearing main list")
-                    userSourceDao.clearMainListSources()
-                    remoteKeyUserDao.clearKey()
+                    db.userSourceDao().clearMainListSources()
+                    db.remoteKeyUserDao().clearKey()
                 }
-                userDao.insertAll(result)
+                db.userDao().insertAll(result)
                 Log.d("User Mediator", "Inserted ${result.size} item to main list")
 
                 val currCount = if (loadType == LoadType.REFRESH) {
                     0
                 } else {
-                    userSourceDao.getMainListCount()
+                    db.userSourceDao().getMainListCount()
                 }
                 Log.d("User Mediator", "Current count $currCount")
 
-                //insert data to source
+                // insert data to source
                 val sources = result.mapIndexed { index, entity ->
                     UserSourceEntity(
                         id = entity.id,
@@ -103,14 +99,14 @@ open class GithubUserRemoteMediator @Inject constructor(
                         timestamp = entity.lastUpdated
                     )
                 }
-                userSourceDao.insertSources(sources)
+                db.userSourceDao().insertSources(sources)
                 Log.d("User Mediator", "Inserted sources")
 
-                //store last data for pagination
+                // store last data for pagination
                 val nextSince = result.lastOrNull()?.id
                 if (nextSince != null) {
                     Log.d("User Mediator", "Storing key next $nextSince")
-                    remoteKeyUserDao.insertOrReplace(
+                    db.remoteKeyUserDao().insertOrReplace(
 
                         RemoteKeyUserEntity(
                             id = "user_list",
@@ -123,7 +119,7 @@ open class GithubUserRemoteMediator @Inject constructor(
             Log.d("User Mediator", "Load complete pagination ${result.isEmpty()}")
             MediatorResult.Success(endOfPaginationReached = result.isEmpty())
         } catch (e: Exception) {
-            Log.d("User Mediator", "error ${e.message}")
+            Log.d("User Mediator", "error $e - ${e.message}")
             MediatorResult.Error(e)
         }
     }

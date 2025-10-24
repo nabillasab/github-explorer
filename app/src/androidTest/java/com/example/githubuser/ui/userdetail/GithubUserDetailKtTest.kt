@@ -17,7 +17,6 @@ class GithubUserDetailKtTest {
     fun showListOfUsers() {
         rule.setContent {
             GithubUserTheme {
-
             }
         }
     }

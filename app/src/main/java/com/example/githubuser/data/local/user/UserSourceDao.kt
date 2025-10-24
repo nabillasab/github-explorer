@@ -22,12 +22,16 @@ interface UserSourceDao {
     @Query("SELECT COUNT(*) FROM user_source WHERE sourceType == 'MAIN_LIST'")
     suspend fun getMainListCount(): Int
 
-    @Query("SELECT COUNT(*) FROM user_source WHERE sourceType == 'SEARCH' AND searchQuery == :query")
-    suspend fun getSourceCountCount(query: String): Int
+    @Query(
+        "SELECT COUNT(*) FROM user_source WHERE sourceType == 'SEARCH' AND searchQuery == :query"
+    )
+    suspend fun getSearchListCount(query: String): Int
 
     @Query("DELETE FROM user_source WHERE timestamp < :timestamp")
     suspend fun clearOldData(timestamp: Long)
 
-    @Query("DELETE FROM github_user WHERE lastUpdated < :timestamp AND id NOT IN (SELECT DISTINCT id FROM user_source)")
+    @Query(
+        "DELETE FROM github_user WHERE lastUpdated < :timestamp AND id NOT IN (SELECT DISTINCT id FROM user_source)"
+    )
     suspend fun clearStaleData(timestamp: Long)
 }

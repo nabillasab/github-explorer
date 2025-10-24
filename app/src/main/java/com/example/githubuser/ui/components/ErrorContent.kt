@@ -1,6 +1,5 @@
 package com.example.githubuser.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,8 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.githubuser.ui.theme.GithubUserTheme
 import com.example.githubuser.R
+import com.example.githubuser.ui.theme.GithubUserTheme
 
 @Composable
 fun ErrorLoadScreen(errorMsg: String, onRetry: () -> Unit) {
@@ -44,7 +43,6 @@ fun ErrorLoadScreen(errorMsg: String, onRetry: () -> Unit) {
                 LabelMediumText("Retry", color = Color.White)
             }
         }
-
     }
 }
 
@@ -70,8 +68,10 @@ fun ErrorFooter(
 @Composable
 fun ErrorPreview() {
     GithubUserTheme {
-            ErrorLoadScreen("No Internet Connection No Internet Connection No Internet Connection No Internet Connection", onRetry = { })
+        ErrorLoadScreen(
+            "No Internet Connection No Internet Connection No Internet Connection No Internet Connection",
+            onRetry = { }
+        )
 //            ErrorFooter("No Internet Connection", onRetry = {})
-
     }
 }

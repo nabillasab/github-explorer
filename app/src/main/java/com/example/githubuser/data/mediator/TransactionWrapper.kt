@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.example.githubuser.data.local.GithubDatabase
 import javax.inject.Inject
 
+@Deprecated("remove this")
 interface TransactionRunner {
     suspend fun <T> runInTransaction(block: suspend () -> T): T
 }

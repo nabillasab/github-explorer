@@ -1,14 +1,14 @@
 package com.example.githubuser.data.network
 
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import kotlin.jvm.Throws
 import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.http2.ConnectionShutdownException
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import kotlin.jvm.Throws
 
 class NetworkExceptionInterceptor : Interceptor {
 

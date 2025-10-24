@@ -25,7 +25,7 @@ data class GithubUserData(
     @SerializedName("following")
     val following: Int,
     @SerializedName("bio")
-    val bio: String?,
+    val bio: String?
 )
 
 data class GithubRepositoryData(

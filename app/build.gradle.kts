@@ -7,7 +7,6 @@ if (localPropertiesFile.exists()) {
 }
 val apiKey = localProperties.getProperty("github_auth_token") ?: ""
 
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -52,6 +51,18 @@ android {
         compose = true
         buildConfig = true
     }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/NOTICE.md",
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -63,7 +74,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
-
 
     // Retrofit
     implementation(libs.retrofit2)
@@ -97,10 +107,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.hilt.android.testing)
 
-    //androidtest
+    // androidtest
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.runner)
     androidTestImplementation(libs.rules)
+    androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.paging.testing)
     androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.androidx.core.testing)

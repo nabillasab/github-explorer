@@ -27,7 +27,8 @@ fun RepositoryWebviewScreen(navController: NavController, url: String, titleRepo
                     )
                 }
             }, title = { SectionTitle(titleRepo) })
-        }) { paddingValues ->
+        }
+    ) { paddingValues ->
         WebviewScreen(url, modifier = Modifier.padding(paddingValues))
     }
 }

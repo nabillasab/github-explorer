@@ -98,7 +98,7 @@ fun GithubUserDetail(
     val repos = handler.repoPagingFlow.collectAsLazyPagingItems()
     val uiState by handler.uiState.collectAsState()
 
-    //force paging 3 to refresh to fix issue it doesn't trigger refresh
+    // force paging 3 to refresh to fix issue it doesn't trigger refresh
     LaunchedEffect(Unit) { repos.refresh() }
 
     Scaffold(
@@ -125,8 +125,10 @@ fun GithubUserDetail(
                         fontWeight = FontWeight.Bold,
                         color = PrimaryColor
                     )
-                })
-        }) { paddingValues ->
+                }
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,6 +153,7 @@ fun DetailHeader(uiState: UiState<User>) {
         }
 
         is UiState.Error -> {
+            // TODO should show better view if user get error on this part
             val userEmpty = User(
                 id = 0,
                 username = "",
@@ -178,8 +181,12 @@ fun UserInformation(user: User, modifier: Modifier = Modifier) {
     ) {
         Row {
             UserAvatar(
-                user.avatarUrl ?: "", 64.dp, modifier = modifier.padding(
-                    start = 16.dp, end = 16.dp, bottom = 8.dp
+                user.avatarUrl ?: "",
+                64.dp,
+                modifier = modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 8.dp
                 )
             )
             Column {
@@ -199,9 +206,13 @@ fun UserInformation(user: User, modifier: Modifier = Modifier) {
         }
         if (!user.bio.isNullOrEmpty()) {
             LabelSmallText(
-                user.bio, maxLines = 3, modifier = Modifier.padding(
-                    horizontal = 16.dp, vertical = 8.dp
-                ), color = PrimaryColor
+                user.bio,
+                maxLines = 3,
+                modifier = Modifier.padding(
+                    horizontal = 16.dp,
+                    vertical = 8.dp
+                ),
+                color = PrimaryColor
             )
         }
     }
@@ -217,7 +228,8 @@ fun CountDetail(count: Int, title: String) {
 
 @Composable
 fun RepositoryList(
-    repositoryList: LazyPagingItems<Repository>, onRepoClick: (Pair<String, String>) -> Unit
+    repositoryList: LazyPagingItems<Repository>,
+    onRepoClick: (Pair<String, String>) -> Unit
 ) {
     LazyColumn(modifier = Modifier.padding(vertical = 8.dp)) {
         items(repositoryList.itemCount) { index ->
@@ -227,7 +239,8 @@ fun RepositoryList(
                         .fillMaxWidth()
                         .clickable {
                             onRepoClick(Pair(repository.name, repository.repoUrl))
-                        }) {
+                        }
+                ) {
                     if (!repository.fork) {
                         ItemRepository(repository)
                     }
@@ -240,7 +253,8 @@ fun RepositoryList(
             item {
                 ErrorFooter(
                     errorMsg = error.error.localizedMessage ?: "Failed to load more",
-                    onRetry = { repositoryList.retry() })
+                    onRetry = { repositoryList.retry() }
+                )
             }
         }
     }
@@ -253,7 +267,9 @@ fun RepositoryList(
         is LoadState.Error -> {
             val error = repositoryList.loadState.refresh as LoadState.Error
             ErrorLoadScreen(
-                error.error.message ?: "Failed to load data", onRetry = { repositoryList.retry() })
+                error.error.message ?: "Failed to load data",
+                onRetry = { repositoryList.retry() }
+            )
         }
 
         else -> {}
@@ -272,7 +288,7 @@ fun ItemRepository(repository: Repository) {
             focusedElevation = 6.dp
         ),
         shape = RectangleShape,
-        colors = CardDefaults.cardColors(containerColor = White),
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Row(modifier = Modifier.padding(horizontal = 16.dp)) {
             ImageDrawable(
@@ -311,7 +327,7 @@ fun ItemRepository(repository: Repository) {
                     repository.langRepo,
                     repository.star,
                     repository.forksCount,
-                    repository.updatedAt,
+                    repository.updatedAt
                 )
 
                 if (!repository.description.isNullOrEmpty()) {
@@ -369,7 +385,8 @@ fun RepoDetail(
                 color = MetadataColor
             )
             LabelMicroText(
-                forksCount.toString(), modifier = modifier.padding(start = 4.dp, end = 12.dp)
+                forksCount.toString(),
+                modifier = modifier.padding(start = 4.dp, end = 12.dp)
             )
         }
 
@@ -385,7 +402,6 @@ fun RepoDetail(
         )
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

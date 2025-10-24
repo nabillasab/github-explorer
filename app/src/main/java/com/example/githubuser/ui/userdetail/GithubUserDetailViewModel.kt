@@ -12,11 +12,11 @@ import com.example.githubuser.ui.model.UiState
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.userdetail.model.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class GithubUserDetailViewModel @Inject constructor(

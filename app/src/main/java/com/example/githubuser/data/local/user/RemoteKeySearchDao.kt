@@ -18,5 +18,4 @@ interface RemoteKeySearchDao {
 
     @Query("DELETE FROM search_remote_key WHERE searchQuery == :query")
     suspend fun clearKey(query: String)
-
 }

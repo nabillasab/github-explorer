@@ -58,7 +58,7 @@ fun TextTooltip(text: String, modifier: Modifier = Modifier) {
     ) {
         LabelSmallText(
             text = text,
-            color = backgroundColor,
+            color = backgroundColor
         )
     }
 }
@@ -72,6 +72,5 @@ fun GithubUserListPreview() {
             Spacer(modifier = Modifier.size(16.dp))
             InfoTooltip("Only non-forked repositories are displayed")
         }
-
     }
 }

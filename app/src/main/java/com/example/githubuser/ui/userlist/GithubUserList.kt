@@ -44,7 +44,8 @@ import com.example.githubuser.ui.theme.GithubUserTheme
 
 @Composable
 fun GithubUserListScreen(
-    onUserClick: (String) -> Unit, viewModel: GithubUserListViewModel = hiltViewModel()
+    onUserClick: (String) -> Unit,
+    viewModel: GithubUserListViewModel = hiltViewModel()
 ) {
     GithubUserList(viewModel, onUserClick)
 }
@@ -52,7 +53,8 @@ fun GithubUserListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GithubUserList(
-    handler: SearchUserHandler, onUserClick: (String) -> Unit
+    handler: SearchUserHandler,
+    onUserClick: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -67,7 +69,8 @@ private fun GithubUserList(
                 title = { ToolbarTitle("Github Users") },
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-        }) { paddingValues ->
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -83,7 +86,8 @@ private fun GithubUserList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ContentUserList(
-    handler: SearchUserHandler, onUserClick: (String) -> Unit
+    handler: SearchUserHandler,
+    onUserClick: (String) -> Unit
 ) {
     val searchQuery by handler.searchQuery.collectAsState()
     val users = handler.userPagingFlow.collectAsLazyPagingItems()
@@ -98,16 +102,15 @@ private fun ContentUserList(
             onActiveChange = { },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Search, contentDescription = "Search Icon"
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search Icon"
                 )
             },
             placeholder = {
                 Text("Search name here…")
             }
         ) {
-
         }
-
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -120,12 +123,15 @@ private fun ContentUserList(
             loadState.refresh is LoadState.Error -> {
                 val error = users.loadState.refresh as LoadState.Error
                 ErrorLoadScreen(
-                    error.error.message ?: "Failed to load data", onRetry = { users.retry() })
+                    error.error.message ?: "Failed to load data",
+                    onRetry = { users.retry() }
+                )
             }
 
             users.itemCount == 0 -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text("No users found")
                 }
@@ -140,7 +146,8 @@ private fun ContentUserList(
                                     .fillMaxWidth()
                                     .clickable {
                                         onUserClick(user.username)
-                                    }) {
+                                    }
+                            ) {
                                 UserItem(user)
                             }
                         }
@@ -153,7 +160,8 @@ private fun ContentUserList(
                             val error = loadState.append as LoadState.Error
                             ErrorFooter(
                                 errorMsg = error.error.localizedMessage ?: "Failed to load more",
-                                onRetry = { users.retry() })
+                                onRetry = { users.retry() }
+                            )
                         }
                     }
                 }

@@ -15,13 +15,13 @@ import com.example.githubuser.di.IoDispatcher
 import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.userdetail.model.Repository
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class GithubUserRepositoryImpl @Inject constructor(
@@ -44,7 +44,8 @@ class GithubUserRepositoryImpl @Inject constructor(
                 initialLoadSize = 20
             ),
             remoteMediator = userRemoteMediator,
-            pagingSourceFactory = { userDao.getUsersResult() }).flow.map { pagingData ->
+            pagingSourceFactory = { userDao.getUsersResult() }
+        ).flow.map { pagingData ->
             pagingData.map { it.toModel() }
         }
     }
@@ -59,7 +60,8 @@ class GithubUserRepositoryImpl @Inject constructor(
                 prefetchDistance = 5
             ),
             remoteMediator = searchRemoteMediator,
-            pagingSourceFactory = { userDao.getSearchResult(query) }).flow.map { pagingData ->
+            pagingSourceFactory = { userDao.getSearchResult(query) }
+        ).flow.map { pagingData ->
             pagingData.map { it.toModel() }
         }
     }
@@ -84,7 +86,6 @@ class GithubUserRepositoryImpl @Inject constructor(
                         emit(Result.Success(userDataCompleted.toModel()))
                     }
                 }
-
             } catch (exception: Exception) {
                 emit(Result.Error(exception.message ?: "unexpected error"))
                 if (userDataCompleted != null) {
@@ -106,11 +107,13 @@ class GithubUserRepositoryImpl @Inject constructor(
                 pageSize = 20,
                 enablePlaceholders = false,
                 prefetchDistance = 5,
-                initialLoadSize = 20),
+                initialLoadSize = 20
+            ),
             remoteMediator = repoRemoteMediator,
             pagingSourceFactory = {
                 repositoryDao.getRepoByUserName(username)
-            }).flow.map { pagingData ->
+            }
+        ).flow.map { pagingData ->
             pagingData.map { it.toModel() }
         }
     }

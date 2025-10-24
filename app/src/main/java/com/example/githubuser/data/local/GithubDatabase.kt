@@ -16,12 +16,14 @@ import com.example.githubuser.data.local.user.UserSourceDao
 import com.example.githubuser.data.local.user.UserSourceEntity
 
 @Database(
-    entities = [UserEntity::class,
+    entities = [
+        UserEntity::class,
         UserSourceEntity::class,
         RepositoryEntity::class,
         RemoteKeyUserEntity::class,
         RemoteKeySearchEntity::class,
-        RemoteKeyRepoEntity::class],
+        RemoteKeyRepoEntity::class
+    ],
     version = 1,
     exportSchema = false
 )

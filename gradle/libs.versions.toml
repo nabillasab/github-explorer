@@ -63,6 +63,7 @@ room-testing = { group = "androidx.room", name = "room-testing", version.ref = "
 
 kotlinx-coroutine-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxtest"}
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk"}
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk"}
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine"}
 
 androidx-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "androidx-core"}
@@ -75,4 +76,3 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-

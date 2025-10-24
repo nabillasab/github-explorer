@@ -4,7 +4,7 @@ import com.example.githubuser.data.GithubLisence
 import com.example.githubuser.data.GithubRepositoryData
 import com.example.githubuser.data.GithubUserData
 import com.example.githubuser.data.local.repo.RepositoryEntity
-import com.example.githubuser.data.local.UserEntity
+import com.example.githubuser.data.local.user.UserEntity
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.userdetail.model.Repository
 
@@ -15,7 +15,7 @@ object FakeModel {
         val repository3 = Repository(
             id = 1,
             name = "github-user",
-            description = "Android Movie Playground!asdbajbdjabdjah ajkdbajhbda kjadkjabsdjkasbdjaksbdjasbdjkasbdjkasbd askjdbakjsbdkjasbd",
+            description = "Android Movie Playground",
             langRepo = null,
             star = 6,
             repoUrl = "https://github.com/nabillasab/movieproject",
@@ -85,7 +85,6 @@ object FakeModel {
         return user1
     }
 
-
     fun getFakeFreshUser(): User {
         val user1 = User(
             id = 1,
@@ -120,6 +119,60 @@ object FakeModel {
             followers = 4,
             following = 22,
             repoCount = 12,
+            bio = null
+        )
+        userList.add(user1)
+        userList.add(user2)
+        return userList
+    }
+
+    fun getSearchUserList(): List<User> {
+        val userList = mutableListOf<User>()
+        val user1 = User(
+            id = 1,
+            username = "nabillasab",
+            avatarUrl = "https://avatars.githubusercontent.com/u/25047957?v=4",
+            fullName = "",
+            followers = 0,
+            following = 0,
+            repoCount = 0,
+            bio = null
+        )
+        val user2 = User(
+            id = 2,
+            username = "audrians",
+            avatarUrl = "https://avatars.githubusercontent.com/u/6389222?v=4",
+            fullName = "",
+            followers = 0,
+            following = 0,
+            repoCount = 0,
+            bio = null
+        )
+        userList.add(user1)
+        userList.add(user2)
+        return userList
+    }
+
+    fun getFakeMainUserList(): List<User> {
+        val userList = mutableListOf<User>()
+        val user1 = User(
+            id = 1,
+            username = "mojombo",
+            avatarUrl = "https://avatars.githubusercontent.com/u/1?v=4",
+            fullName = "",
+            followers = 0,
+            following = 0,
+            repoCount = 0,
+            bio = null
+        )
+        val user2 = User(
+            id = 2,
+            username = "defunkt",
+            avatarUrl = "https://avatars.githubusercontent.com/u/2?v=4",
+            fullName = "",
+            followers = 0,
+            following = 0,
+            repoCount = 0,
             bio = null
         )
         userList.add(user1)

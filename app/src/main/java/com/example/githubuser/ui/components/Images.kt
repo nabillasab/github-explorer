@@ -48,8 +48,12 @@ fun LoadImage(url: String, modifier: Modifier) {
 }
 
 @Composable
-fun ImageDrawable(drawable: Int, contentDesc: String, size: Dp = 14.dp,
-                  color: Color = MaterialTheme.colorScheme.onBackground, modifier: Modifier = Modifier
+fun ImageDrawable(
+    drawable: Int,
+    contentDesc: String,
+    size: Dp = 14.dp,
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    modifier: Modifier = Modifier
 ) {
     Icon(
         painter = painterResource(drawable),
@@ -61,8 +65,12 @@ fun ImageDrawable(drawable: Int, contentDesc: String, size: Dp = 14.dp,
 }
 
 @Composable
-fun ImageIcon(imageVector: ImageVector, contentDesc: String, size: Dp = 14.dp,
-              color: Color = MaterialTheme.colorScheme.onBackground, modifier: Modifier = Modifier
+fun ImageIcon(
+    imageVector: ImageVector,
+    contentDesc: String,
+    size: Dp = 14.dp,
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    modifier: Modifier = Modifier
 ) {
     Icon(
         imageVector = imageVector,

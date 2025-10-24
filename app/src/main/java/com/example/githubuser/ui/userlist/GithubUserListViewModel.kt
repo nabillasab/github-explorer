@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import com.example.githubuser.domain.GithubUserRepository
 import com.example.githubuser.ui.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -15,11 +16,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import javax.inject.Inject
 
 @HiltViewModel
 class GithubUserListViewModel @Inject constructor(
-    private val repository: GithubUserRepository,
+    private val repository: GithubUserRepository
 ) : ViewModel(), SearchUserHandler {
 
     private val _searchQuery = MutableStateFlow("")
@@ -30,10 +30,10 @@ class GithubUserListViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    //debounce for waiting until user pauses typing in ms
-    //distinctUntilChanged for avoid duplicate queries
-    //flatMapLatest for cancel old request, keep latest
-    //cachedIn for cache result across config changes
+    // debounce for waiting until user pauses typing in ms
+    // distinctUntilChanged for avoid duplicate queries
+    // flatMapLatest for cancel old request, keep latest
+    // cachedIn for cache result across config changes
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override val userPagingFlow: Flow<PagingData<User>> =
         _searchQuery.debounce { 500 }.distinctUntilChanged().flatMapLatest { query ->

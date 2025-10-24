@@ -7,7 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.HeaderMap
 import retrofit2.http.Path
 import retrofit2.http.Query
-import retrofit2.http.QueryMap
 
 interface GithubApi {
 
@@ -39,7 +38,4 @@ interface GithubApi {
         @Query("per_page") perPage: Int = 20,
         @HeaderMap headers: Map<String, String>
     ): List<GithubRepositoryData>
-
-
-
 }

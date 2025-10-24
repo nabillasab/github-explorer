@@ -38,5 +38,5 @@ data class RemoteKeyUserEntity(
 data class RemoteKeySearchEntity(
     @PrimaryKey val searchQuery: String,
     val nextPage: Int?,
-    val lastUpdate: Long,
+    val lastUpdate: Long
 )

@@ -5,9 +5,9 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import com.example.githubuser.data.local.repo.RemoteKeyRepoDao
+import androidx.room.withTransaction
+import com.example.githubuser.data.local.GithubDatabase
 import com.example.githubuser.data.local.repo.RemoteKeyRepoEntity
-import com.example.githubuser.data.local.repo.RepositoryDao
 import com.example.githubuser.data.local.repo.RepositoryEntity
 import com.example.githubuser.data.network.AuthHelper
 import com.example.githubuser.data.network.GithubApi
@@ -19,9 +19,7 @@ import javax.inject.Inject
  */
 @OptIn(ExperimentalPagingApi::class)
 open class GithubRepoRemoteMediator @Inject constructor(
-    private val transactionRunner: RoomTransactionRunner,
-    private val repositoryDao: RepositoryDao,
-    private val remoteKeyRepoDao: RemoteKeyRepoDao,
+    private val db: GithubDatabase,
     private val api: GithubApi
 ) : RemoteMediator<Int, RepositoryEntity>() {
 
@@ -32,7 +30,7 @@ open class GithubRepoRemoteMediator @Inject constructor(
     }
 
     override suspend fun initialize(): InitializeAction {
-        val lastUpdated = repositoryDao.getLastUpdated() ?: 0L
+        val lastUpdated = db.repositoryDao().getLastUpdated() ?: 0L
         val currentTime = System.currentTimeMillis()
         val diff = currentTime - lastUpdated
         val cacheTime = 20 * 6 * 1000
@@ -49,20 +47,20 @@ open class GithubRepoRemoteMediator @Inject constructor(
         loadType: LoadType,
         state: PagingState<Int, RepositoryEntity>
     ): MediatorResult {
-        Log.d("Repo Mediator", "Fetching users loadType=${loadType}")
+        Log.d("Repo Mediator", "Fetching users loadType=$loadType")
         val page: Int = when (loadType) {
-            //First load, pager recreated, or invalidate()
+            // First load, pager recreated, or invalidate()
             LoadType.REFRESH -> {
                 Log.d("Repo Mediator", "REFRESH - Starting from 0")
                 0
             }
-            //Load next page (scrolling down)
+            // Load next page (scrolling down)
             LoadType.APPEND -> {
-                val remoteKey = remoteKeyRepoDao.getRemoteKey(username)
+                val remoteKey = db.remoteKeyRepoDao().getRemoteKey(username)
                 Log.d("Repo Mediator", "APPEND - remote keys $remoteKey")
                 remoteKey?.nextPage ?: return MediatorResult.Success(true)
             }
-            //Load previous page (scrolling up) — not always needed
+            // Load previous page (scrolling up) — not always needed
             LoadType.PREPEND -> {
                 Log.d("Repo Mediator", "PREPEND - no next key ending pagination")
                 return MediatorResult.Success(true)
@@ -80,7 +78,7 @@ open class GithubRepoRemoteMediator @Inject constructor(
 
             val repoWithTimestamp = response.map { it.toEntity(username) }
             val endOfPagination = response.isEmpty()
-            val cacheLastKey = remoteKeyRepoDao.getRemoteKey(username)
+            val cacheLastKey = db.remoteKeyRepoDao().getRemoteKey(username)
 
             var diff: Long = Integer.MAX_VALUE.toLong()
             if (cacheLastKey != null) {
@@ -89,12 +87,12 @@ open class GithubRepoRemoteMediator @Inject constructor(
             }
             val isCacheFresh = cacheLastKey != null && diff < 20 * 60 * 1000
 
-            transactionRunner.runInTransaction {
+            db.withTransaction {
                 if (loadType == LoadType.REFRESH && !isCacheFresh) {
-                    remoteKeyRepoDao.clearKeyByUserName(username)
-                    repositoryDao.clearDataByUsername(username)
+                    db.remoteKeyRepoDao().clearKeyByUserName(username)
+                    db.repositoryDao().clearDataByUsername(username)
                 }
-                repositoryDao.insertAll(repoWithTimestamp)
+                db.repositoryDao().insertAll(repoWithTimestamp)
                 Log.d("Repo Mediator", "Inserted repos data")
 
                 if (!endOfPagination) {
@@ -104,7 +102,7 @@ open class GithubRepoRemoteMediator @Inject constructor(
                         lastFetched = System.currentTimeMillis()
                     )
                     Log.d("Repo Mediator", "Storing remote key $key")
-                    remoteKeyRepoDao.insertOrReplace(key)
+                    db.remoteKeyRepoDao().insertOrReplace(key)
                 }
             }
             Log.d("Repo Mediator", "Load complete pagination $endOfPagination")

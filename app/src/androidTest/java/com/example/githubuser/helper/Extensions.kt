@@ -3,7 +3,7 @@ package com.example.githubuser.helper
 import androidx.paging.PagingSource
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
-import com.example.githubuser.data.local.UserEntity
+import com.example.githubuser.data.local.user.UserEntity
 
 suspend fun PagingSource<Int, UserEntity>.loadAll(): List<UserEntity> {
     val result = this.load(

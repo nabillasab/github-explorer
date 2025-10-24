@@ -5,9 +5,9 @@ import androidx.room.Room
 import com.example.githubuser.data.GithubUserRepositoryImpl
 import com.example.githubuser.data.local.GithubDatabase
 import com.example.githubuser.data.local.repo.RemoteKeyRepoDao
-import com.example.githubuser.data.local.user.RemoteKeyUserDao
 import com.example.githubuser.data.local.repo.RepositoryDao
 import com.example.githubuser.data.local.user.RemoteKeySearchDao
+import com.example.githubuser.data.local.user.RemoteKeyUserDao
 import com.example.githubuser.data.local.user.UserDao
 import com.example.githubuser.data.local.user.UserSourceDao
 import com.example.githubuser.data.network.GithubApi
@@ -23,11 +23,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -96,7 +96,9 @@ object DatabaseModules {
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): GithubDatabase {
         return Room.databaseBuilder(
-            context.applicationContext, GithubDatabase::class.java, "github_database"
+            context.applicationContext,
+            GithubDatabase::class.java,
+            "github_database"
         ).build()
     }
 
@@ -129,5 +131,4 @@ object DatabaseModules {
     fun provideRemoteKeyRepoDao(database: GithubDatabase): RemoteKeyRepoDao {
         return database.remoteKeyRepoDao()
     }
-
 }

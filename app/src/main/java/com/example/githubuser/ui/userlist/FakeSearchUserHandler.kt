@@ -42,6 +42,6 @@ class FakeSearchUserHandler() : SearchUserHandler {
         flowOf(PagingData.from(getFakeUserList()))
 
     override fun onSearchQueryChanged(query: String) {
-        //no op for preview
+        // no op for preview
     }
 }

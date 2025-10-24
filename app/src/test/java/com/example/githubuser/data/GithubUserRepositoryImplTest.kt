@@ -4,11 +4,14 @@ import androidx.paging.AsyncPagingDataDiffer
 import androidx.paging.ExperimentalPagingApi
 import app.cash.turbine.test
 import com.example.githubuser.data.fake.FakeRepoRemoteMediator
-import com.example.githubuser.data.fake.FakeSearchUserPagingSource
-import com.example.githubuser.data.local.user.RemoteKeyUserDao
+import com.example.githubuser.data.fake.FakeSearchRemoteMediator
+import com.example.githubuser.data.fake.FakeUserRemoteMediator
 import com.example.githubuser.data.local.repo.RepositoryDao
+import com.example.githubuser.data.local.user.RemoteKeyUserDao
 import com.example.githubuser.data.local.user.UserDao
+import com.example.githubuser.data.local.user.UserSourceDao
 import com.example.githubuser.data.mediator.GithubRepoRemoteMediator
+import com.example.githubuser.data.mediator.GithubSearchRemoteMediator
 import com.example.githubuser.data.mediator.GithubUserRemoteMediator
 import com.example.githubuser.data.network.GithubApi
 import com.example.githubuser.data.network.GithubDataSource
@@ -50,74 +53,114 @@ class GithubUserRepositoryImplTest {
     private lateinit var repository: GithubUserRepository
     private lateinit var networkDataSource: GithubDataSource
     private lateinit var userRemoteMediator: GithubUserRemoteMediator
-    private lateinit var searchUserFactory: GithubSearchUserPagingSource.Factory
-    private lateinit var repoUserFactory: GithubRepoRemoteMediator.Factory
+    private lateinit var searchRemoteMediator: GithubSearchRemoteMediator
+    private lateinit var repoRepoRemoteMediator: GithubRepoRemoteMediator
     private lateinit var userDao: UserDao
     private lateinit var repositoryDao: RepositoryDao
     private lateinit var remoteKeyUserDao: RemoteKeyUserDao
+    private lateinit var userSourceDao: UserSourceDao
 
     private lateinit var api: GithubApi
 
     @OptIn(ExperimentalPagingApi::class)
     @Before
     fun setUp() {
-        api = mockk()
+        api = mockk<GithubApi>()
         userDao = mockk()
         networkDataSource = mockk()
         repositoryDao = mockk()
         remoteKeyUserDao = mockk()
         userRemoteMediator = mockk()
-
-        searchUserFactory = object : GithubSearchUserPagingSource.Factory {
-            override fun create(query: String): GithubSearchUserPagingSource =
-                FakeSearchUserPagingSource(FakeModel.getFakeUserList().map { it.toData() })
-        }
-        repoUserFactory = object : GithubRepoRemoteMediator.Factory {
-            override fun create(username: String): GithubRepoRemoteMediator =
-                FakeRepoRemoteMediator()
-        }
+        repoRepoRemoteMediator = mockk()
+        searchRemoteMediator = mockk()
+        userSourceDao = mockk()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `getUserList should return paging data user from paging source`() = runTest {
-        //Given
-        val expected = FakeModel.getFakeUserList()
-        val userEntityPagingData = ListPagingSource(expected.map { it.toEntity() })
-        every { userDao.getUserPagingSource() } returns userEntityPagingData
+    fun `getUserList should return paging data user if query empty`() =
+        runTest {
+            // Given
+            val expected = FakeModel.getFakeMainUserList()
+            val userEntityPagingData = ListPagingSource(expected.map { it.toEntity() })
+            every { userDao.getUsersResult() } returns userEntityPagingData
 
-        //When
-        val differ = AsyncPagingDataDiffer(
-            diffCallback = UserDiffCallback(),
-            updateCallback = NoopListCallback(),
-            workerDispatcher = Dispatchers.Main
-        )
+            // When
+            val differ = AsyncPagingDataDiffer(
+                diffCallback = UserDiffCallback(),
+                updateCallback = NoopListCallback(),
+                workerDispatcher = Dispatchers.Main
+            )
 
-        //set mediator object to null
-        repository = GithubUserRepositoryImpl(
-            networkDataSource,
-            null,
-            searchUserFactory,
-            repoUserFactory,
-            userDao,
-            repositoryDao,
-            StandardTestDispatcher()
-        )
+            // set mediator object to null
+            repository = GithubUserRepositoryImpl(
+                networkDataSource,
+                FakeUserRemoteMediator(), // skip init refresh, the result will fully from DAO
+                searchRemoteMediator,
+                repoRepoRemoteMediator,
+                userDao,
+                repositoryDao,
+                StandardTestDispatcher()
+            )
 
-        val job = launch(UnconfinedTestDispatcher()) {
-            repository.getUserList().collectLatest {
-                differ.submitData(it)
+            val job = launch(UnconfinedTestDispatcher()) {
+                repository.getUserList().collectLatest {
+                    differ.submitData(it)
+                }
             }
+
+            advanceUntilIdle()
+
+            // Then
+            val snapshot = differ.snapshot()
+            assertEquals(2, snapshot.size)
+            assertEquals("mojombo", snapshot[0]?.username)
+            assertEquals(expected, snapshot)
+            job.cancel()
         }
 
-        advanceUntilIdle()
+    @Test
+    fun `getUserByUsername should return paging data user if query is not empty`() =
+        runTest {
+            // Given
+            val query = "nabillasab"
+            val expected = FakeModel.getSearchUserList()
+            val userEntityPagingData = ListPagingSource(expected.map { it.toEntity() })
+            every { userDao.getSearchResult(query) } returns userEntityPagingData
 
-        //Then
-        val snapshot = differ.snapshot()
-        assertEquals(2, snapshot.size)
-        assertEquals(expected, snapshot)
-        job.cancel()
-    }
+            // When
+            val differ = AsyncPagingDataDiffer(
+                diffCallback = UserDiffCallback(),
+                updateCallback = NoopListCallback(),
+                workerDispatcher = Dispatchers.Main
+            )
+
+            // set mediator object to null
+            repository = GithubUserRepositoryImpl(
+                networkDataSource,
+                userRemoteMediator,
+                FakeSearchRemoteMediator(),
+                repoRepoRemoteMediator,
+                userDao,
+                repositoryDao,
+                StandardTestDispatcher()
+            )
+
+            val job = launch(UnconfinedTestDispatcher()) {
+                repository.getUserByUsername(query).collectLatest {
+                    differ.submitData(it)
+                }
+            }
+
+            advanceUntilIdle()
+
+            // Then
+            val snapshot = differ.snapshot()
+            assertEquals(2, snapshot.size)
+            assertEquals("nabillasab", snapshot[0]?.username)
+            assertEquals(expected, snapshot)
+            job.cancel()
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
@@ -125,16 +168,16 @@ class GithubUserRepositoryImplTest {
         runTest {
             val username = "nabillasab"
             val expected = FakeModel.getFakeUser()
-            //suspend func we need to use coEvery
+            // suspend func we need to use coEvery
             coEvery { userDao.getFreshUserByUsername(username) } returns null
             coEvery { userDao.getUserDataCompleted(username) } returns expected.toEntity()
 
-            //set mediator object to null
+            // set mediator object to null
             repository = GithubUserRepositoryImpl(
                 networkDataSource,
-                null,
-                searchUserFactory,
-                repoUserFactory,
+                userRemoteMediator,
+                searchRemoteMediator,
+                repoRepoRemoteMediator,
                 userDao,
                 repositoryDao,
                 StandardTestDispatcher()
@@ -153,18 +196,18 @@ class GithubUserRepositoryImplTest {
             val username = "nabillasab"
             val freshUser = FakeModel.getFakeFreshUser()
             val expected = FakeModel.getFakeUser()
-            //suspend func we need to use coEvery
+            // suspend func we need to use coEvery
             coEvery { networkDataSource.getUserDetail(username) } returns expected.toData()
             coEvery { userDao.getFreshUserByUsername(username) } returns freshUser.toEntity()
             coEvery { userDao.getUserDataCompleted(username) } returns null
             coEvery { userDao.insert(any()) } just Runs
 
-            //set mediator object to null
+            // set mediator object to null
             repository = GithubUserRepositoryImpl(
                 networkDataSource,
-                null,
-                searchUserFactory,
-                repoUserFactory,
+                userRemoteMediator,
+                searchRemoteMediator,
+                repoRepoRemoteMediator,
                 userDao,
                 repositoryDao,
                 StandardTestDispatcher()
@@ -182,18 +225,18 @@ class GithubUserRepositoryImplTest {
         val username = "nabillasab"
         val errorMsg = "no internet connection"
 
-        //suspend func we need to use coEvery
+        // suspend func we need to use coEvery
         coEvery { networkDataSource.getUserDetail(username) } throws Exception(errorMsg)
         coEvery { userDao.getFreshUserByUsername(username) } returns null
         coEvery { userDao.getUserDataCompleted(username) } returns null
         coEvery { userDao.insert(any()) } just Runs
 
-        //set mediator object to null
+        // set mediator object to null
         repository = GithubUserRepositoryImpl(
             networkDataSource,
-            null,
-            searchUserFactory,
-            repoUserFactory,
+            userRemoteMediator,
+            searchRemoteMediator,
+            repoRepoRemoteMediator,
             userDao,
             repositoryDao,
             StandardTestDispatcher()
@@ -209,25 +252,25 @@ class GithubUserRepositoryImplTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `getRepoList should return paging data repository from paging source`() = runTest {
-        //Given
+        // Given
         val username = "nabillasab"
         val expected = FakeModel.getFakeRepoList()
         val repoEntityPagingData = ListPagingSource(expected.map { it.toEntity(username) })
         every { repositoryDao.getRepoByUserName(username) } returns repoEntityPagingData
 
-        //When
+        // When
         val differ = AsyncPagingDataDiffer(
             diffCallback = RepositoryDiffCallback(),
             updateCallback = NoopListCallback(),
             workerDispatcher = Dispatchers.Main
         )
 
-        //set mediator object to null
+        // set mediator object to null
         repository = GithubUserRepositoryImpl(
             networkDataSource,
-            null,
-            searchUserFactory,
-            repoUserFactory,
+            userRemoteMediator,
+            searchRemoteMediator,
+            FakeRepoRemoteMediator(),
             userDao,
             repositoryDao,
             StandardTestDispatcher()
@@ -241,47 +284,7 @@ class GithubUserRepositoryImplTest {
 
         advanceUntilIdle()
 
-        //Then
-        val snapshot = differ.snapshot()
-        assertEquals(2, snapshot.size)
-        assertEquals(expected, snapshot)
-        job.cancel()
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `getUserByUsername should return paging data user from paging source`() = runTest {
-        //Given
-        val username = "nabillasab"
-        val expected = FakeModel.getFakeUserList()
-
-        //When
-        val differ = AsyncPagingDataDiffer(
-            diffCallback = UserDiffCallback(),
-            updateCallback = NoopListCallback(),
-            workerDispatcher = Dispatchers.Main
-        )
-
-        //set mediator object to null
-        repository = GithubUserRepositoryImpl(
-            networkDataSource,
-            null,
-            searchUserFactory,
-            repoUserFactory,
-            userDao,
-            repositoryDao,
-            StandardTestDispatcher()
-        )
-
-        val job = launch(UnconfinedTestDispatcher()) {
-            repository.getUserByUsername(username).collectLatest {
-                differ.submitData(it)
-            }
-        }
-
-        advanceUntilIdle()
-
-        //Then
+        // Then
         val snapshot = differ.snapshot()
         assertEquals(2, snapshot.size)
         assertEquals(expected, snapshot)

@@ -49,7 +49,7 @@ fun GithubUserNavHost(
             route = GithubUserDestination.REPO_DETAIL_ROUTE,
             arguments = listOf(
                 navArgument(NAME_ARG) { type = NavType.StringType },
-                navArgument(REPO_URL_ARG) { type = NavType.StringType },
+                navArgument(REPO_URL_ARG) { type = NavType.StringType }
             )
         ) { navBackStackEntry ->
             val name = navBackStackEntry.arguments?.getString(NAME_ARG) ?: ""
@@ -57,5 +57,4 @@ fun GithubUserNavHost(
             RepositoryWebviewScreen(navHostController, url, name)
         }
     }
-
 }
