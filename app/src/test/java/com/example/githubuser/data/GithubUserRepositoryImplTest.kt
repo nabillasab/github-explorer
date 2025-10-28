@@ -119,6 +119,7 @@ class GithubUserRepositoryImplTest {
             job.cancel()
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `getUserByUsername should return paging data user if query is not empty`() =
         runTest {

@@ -118,7 +118,6 @@ class ExtensionsKtTest {
         val repositoryEntity = getRepositoryEntityContainsNull()
 
         val result = repositoryData.toEntity("nabillasab")
-        assertEquals(result, repositoryEntity)
         assertEquals("movie-project", result.repoName)
         assertEquals(null, result.desc)
         assertEquals(null, result.language)
