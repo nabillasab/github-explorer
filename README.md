@@ -23,7 +23,9 @@ An Android app that lets you search and explore GitHub users and view their repo
 - **Networking:** Retrofit + Coroutines + Flow
 - **Image Loading:** Coil  
 - **UI:** Jetpack Compose
-- **DB & Caching:** Room, Paging 3
+- **Database & Caching:** Room, Paging 3
+- **Continuous Integration:** Jenkins
+- **Test Coverage Report:** JaCoCo
 
 ## 🚀 Getting Started
 1. Clone the repo:
