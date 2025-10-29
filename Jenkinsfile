@@ -46,7 +46,7 @@ pipeline {
 
     stage('Tests & Coverage') {
       steps {
-        sh './gradlew clean lint testDebugUnitTest jacocoMergedReport -x connectedDebugAndroidTest --no-build-cache --rerun-tasks'
+        sh './gradlew lint testDebugUnitTest jacocoMergedReport -x connectedDebugAndroidTest --no-build-cache --rerun-tasks'
       }
     }
   }
