@@ -42,3 +42,7 @@ An Android app that lets you search and explore GitHub users and view their repo
 | Github User Detail    |  [API](https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user)   |
 | Search User    | [API](https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#search-users)     |
 | List of Repositories of Specific User    | [API](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repositories-for-a-user)     |
+
+## 🙏 Acknowledgements
+- Data provided by [GitHub API](https://docs.github.com/en/rest)
+- Icons by [Flaticon](https://flaticon.com)
