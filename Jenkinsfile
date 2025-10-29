@@ -44,25 +44,17 @@ pipeline {
       }
     }
 
-    stage('Tests & Coverage') {
+    stage('Lint & Unit Test') {
       steps {
-        sh './gradlew lint testDebugUnitTest jacocoMergedReport -x connectedDebugAndroidTest --no-build-cache --rerun-tasks'
+        sh './gradlew lint testDebugUnitTest'
       }
     }
   }
 
   post {
     always {
-      junit '**/build/test-results/**/*.xml'
-      archiveArtifacts artifacts: '**/build/reports/jacoco/**', fingerprint: true
+      junit '**/test-results/testDebugUnitTest/*.xml'
       archiveArtifacts artifacts: '**/build/outputs/**/*.apk', fingerprint: true
     }
-    success {
-      jacoco(
-         execPattern: '**/jacocoMergedReport.exec',
-         classPattern: '**/classes',
-         sourcePattern: '**/src/main/java'
-         )
-      }
   }
 }
