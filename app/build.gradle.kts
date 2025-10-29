@@ -1,5 +1,5 @@
 import java.util.Properties
-import org.gradle.testing.jacoco.tasks.JacocoReport
+//import org.gradle.testing.jacoco.tasks.JacocoReport
 
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.jacoco)
+//    alias(libs.plugins.jacoco)
 
 }
 
@@ -72,39 +72,39 @@ android {
 }
 
 // ------------ JaCoCo (unit tests & androidTest) ------------
-tasks.register<JacocoReport>("jacocoMergedReport") {
-    group = "verification"
-    description = "Combined JaCoCo report for unit + androidTest."
-
-    dependsOn("testDebugUnitTest", "connectedDebugAndroidTest")
-
-    val coverageExclusions = listOf(
-        "**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-        "**/*Test*.*", "android/**/*.*",
-        "**/*Application*.*", "**/*Hilt*.*", "**/*_HiltModules*.*",
-        "**/*_Factory.*", "**/*_MembersInjector.*", "**/*_Impl*.*",
-        "**/*_GeneratedInjector.*"
-    )
-
-    val javaClasses = fileTree("$buildDir/intermediates/javac/debug/classes") { exclude(coverageExclusions) }
-    val kotlinClasses = fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(coverageExclusions) }
-    classDirectories.setFrom(files(javaClasses, kotlinClasses))
-    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
-
-    val execFiles = files(
-        fileTree("$buildDir/jacoco") { include("testDebugUnitTest.exec") },
-        fileTree("$buildDir/outputs/unit_test_code_coverage") { include("**/testDebugUnitTest.exec") },
-        fileTree("$buildDir/outputs/code_coverage") { include("**/*.ec") }
-    ).filter { it.exists() && it.length() > 0 }
-
-    executionData.setFrom(execFiles)
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
-}
+//tasks.register<JacocoReport>("jacocoMergedReport") {
+//    group = "verification"
+//    description = "Combined JaCoCo report for unit + androidTest."
+//
+//    dependsOn("testDebugUnitTest", "connectedDebugAndroidTest")
+//
+//    val coverageExclusions = listOf(
+//        "**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+//        "**/*Test*.*", "android/**/*.*",
+//        "**/*Application*.*", "**/*Hilt*.*", "**/*_HiltModules*.*",
+//        "**/*_Factory.*", "**/*_MembersInjector.*", "**/*_Impl*.*",
+//        "**/*_GeneratedInjector.*"
+//    )
+//
+//    val javaClasses = fileTree("$buildDir/intermediates/javac/debug/classes") { exclude(coverageExclusions) }
+//    val kotlinClasses = fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(coverageExclusions) }
+//    classDirectories.setFrom(files(javaClasses, kotlinClasses))
+//    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+//
+//    val execFiles = files(
+//        fileTree("$buildDir/jacoco") { include("testDebugUnitTest.exec") },
+//        fileTree("$buildDir/outputs/unit_test_code_coverage") { include("**/testDebugUnitTest.exec") },
+//        fileTree("$buildDir/outputs/code_coverage") { include("**/*.ec") }
+//    ).filter { it.exists() && it.length() > 0 }
+//
+//    executionData.setFrom(execFiles)
+//
+//    reports {
+//        xml.required.set(true)
+//        html.required.set(true)
+//        csv.required.set(false)
+//    }
+//}
 
 dependencies {
 
