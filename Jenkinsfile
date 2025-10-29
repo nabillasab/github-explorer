@@ -46,9 +46,6 @@ pipeline {
 
     stage('Tests & Coverage') {
       steps {
-        //run locally
-        //sh './gradlew clean lint testDebugUnitTest connectedDebugAndroidTest jacocoMergedReport --no-build-cache --rerun-tasks'
-        //run on Jenkins - temporary skipping connectedDebugAndroidTest
         sh './gradlew clean lint testDebugUnitTest jacocoMergedReport --no-build-cache --rerun-tasks'
       }
     }
