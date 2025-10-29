@@ -1,5 +1,6 @@
 package com.example.githubuser.ui.userlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +43,8 @@ import com.example.githubuser.ui.components.ToolbarTitle
 import com.example.githubuser.ui.components.UserAvatar
 import com.example.githubuser.ui.model.User
 import com.example.githubuser.ui.theme.GithubUserTheme
+import com.example.githubuser.ui.theme.PrimaryColor
+import com.example.githubuser.ui.theme.White
 
 @Composable
 fun GithubUserListScreen(
@@ -59,6 +63,13 @@ private fun GithubUserList(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarColors(
+                    containerColor = White,
+                    scrolledContainerColor = PrimaryColor,
+                    navigationIconContentColor = PrimaryColor,
+                    titleContentColor = PrimaryColor,
+                    actionIconContentColor = PrimaryColor
+                ),
                 navigationIcon = {
                     Icon(
                         painter = painterResource(R.drawable.github_icon),
@@ -66,7 +77,7 @@ private fun GithubUserList(
                         modifier = Modifier.size(36.dp)
                     )
                 },
-                title = { ToolbarTitle("Github Users") },
+                title = { ToolbarTitle("GitHub Explorer") },
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
@@ -74,6 +85,7 @@ private fun GithubUserList(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(White)
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
                 .padding(horizontal = 16.dp)
